@@ -17,17 +17,19 @@ public class SeriesController : Controller
 
   public IActionResult Detail(string id)
   {
-    var series = _movieService.GetSeriesById(id);
+    var settings = _settingsService.GetSettings();
+    var lang = settings.Language;
+    var series = _movieService.GetSeriesById(id, lang);
     if (series == null)
       return NotFound();
 
-    var all = _movieService.GetAllSeries();
+    var all = _movieService.GetAllSeries(lang);
     var index = all.ToList().FindIndex(s => s.Id == id);
 
     var model = new SeriesDetailViewModel
     {
       Series = series,
-      Settings = _settingsService.GetSettings(),
+      Settings = settings,
       PrevSeries = index > 0 ? all[index - 1] : null,
       NextSeries = index < all.Count - 1 ? all[index + 1] : null
     };

@@ -1,24 +1,30 @@
 @model SeriesDetailViewModel
+@using FilmSerileri.Data
 @{
     ViewData["Title"] = Model.Series.Title;
     var s = Model.Series;
+    var themeId = SeriesThemes.GetYouTubeId(s.Id);
 }
 
 <section class="detail-hero" style="--accent: @s.AccentColor; --from: @s.GradientFrom; --to: @s.GradientTo;">
-    <div class="detail-hero-bg"></div>
-    <div class="detail-hero-content">
-        <a asp-controller="Home" asp-action="Index" class="back-link">← Ana Sayfa</a>
-        <span class="detail-icon">@s.Icon</span>
-        <h1>@s.Title</h1>
-        <p class="detail-original">@s.OriginalTitle</p>
-        <p class="detail-tagline">"@s.Tagline"</p>
-        <div class="detail-meta">
-            <span class="tag">@s.Genre</span>
-            @if (Model.Settings.ShowRatings)
-            {
-                <span class="tag rating">⭐ @s.ImdbRating.ToString("F1")</span>
-            }
-            <span class="tag">@s.ReleaseYearStart – @s.ReleaseYearEnd</span>
+    <div class="detail-hero-bg" style="background-image: url('@s.BackdropUrl')"></div>
+    <div class="detail-hero-inner">
+        <div class="detail-hero-content">
+            <a asp-controller="Home" asp-action="Index" class="back-link">← @L.T("back_home")</a>
+            <h1>@s.Title</h1>
+            <p class="detail-original">@s.OriginalTitle</p>
+            <p class="detail-tagline">"@s.Tagline"</p>
+            <div class="detail-meta">
+                <span class="tag">@s.Genre</span>
+                @if (Model.Settings.ShowRatings)
+                {
+                    <span class="tag rating">⭐ @s.ImdbRating.ToString("F1")</span>
+                }
+                <span class="tag">@s.ReleaseYearStart – @s.ReleaseYearEnd</span>
+            </div>
+        </div>
+        <div class="detail-hero-poster">
+            <img src="@s.PosterUrl" alt="@s.Title" />
         </div>
     </div>
 </section>
@@ -26,35 +32,38 @@
 <section class="section detail-section">
     <div class="detail-grid">
         <div class="detail-main">
-            <h2>Hakkında</h2>
+            <h2>@L.T("about")</h2>
             <p class="detail-desc">@s.Description</p>
 
             <div class="info-cards">
                 <div class="info-card">
-                    <span class="info-label">Yönetmen</span>
+                    <span class="info-label">@L.T("director")</span>
                     <span class="info-value">@s.Director</span>
                 </div>
                 <div class="info-card">
-                    <span class="info-label">Stüdyo</span>
+                    <span class="info-label">@L.T("studio")</span>
                     <span class="info-value">@s.Studio</span>
                 </div>
                 <div class="info-card">
-                    <span class="info-label">Film Sayısı</span>
+                    <span class="info-label">@L.T("movie_count")</span>
                     <span class="info-value">@s.Movies.Count</span>
                 </div>
             </div>
 
-            <h2 class="section-subtitle">Filmler</h2>
+            <h2 class="section-subtitle">@L.T("movies_section")</h2>
             <div class="movie-timeline">
                 @foreach (var movie in s.Movies.OrderBy(m => m.Order))
                 {
                     <div class="movie-item">
-                        <div class="movie-order">@movie.Order</div>
+                        <div class="movie-poster-thumb">
+                            <img src="@movie.PosterUrl" alt="@movie.Title" loading="lazy" />
+                            <span class="movie-order">@movie.Order</span>
+                        </div>
                         <div class="movie-info">
                             <h3>@movie.Title <span class="movie-year">(@movie.Year)</span></h3>
                             <p>@movie.Synopsis</p>
                             <div class="movie-meta">
-                                <span>⏱ @movie.DurationMinutes dk</span>
+                                <span>⏱ @movie.DurationMinutes @L.T("minutes")</span>
                                 @if (Model.Settings.ShowRatings)
                                 {
                                     <span>⭐ @movie.ImdbRating.ToString("F1")</span>
@@ -67,12 +76,15 @@
         </div>
 
         <aside class="detail-sidebar">
-            <h2>Oyuncu Kadrosu</h2>
+            <h2>@L.T("cast_section")</h2>
             <div class="cast-list">
                 @foreach (var member in s.Cast)
                 {
                     <div class="cast-card">
-                        <div class="cast-avatar">@member.ActorName[0]</div>
+                        <div class="cast-avatar">
+                            <img src="@member.PhotoUrl" alt="@member.ActorName" loading="lazy"
+                                 onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=@Uri.EscapeDataString(member.ActorName)&background=2d2d44&color=fff&size=185&bold=true&format=png'" />
+                        </div>
                         <div class="cast-info">
                             <strong>@member.ActorName</strong>
                             <span class="cast-character">@member.CharacterName</span>
@@ -103,3 +115,29 @@
         }
     </div>
 </section>
+
+@if (themeId != null)
+{
+    <div id="theme-music-widget" class="theme-music-widget is-hidden"
+         data-youtube-id="@themeId"
+         data-play-text="@L.T("theme_music_play")"
+         data-pause-text="@L.T("theme_music_pause")"
+         data-playing-text="@L.T("theme_music_playing")">
+        <div id="theme-yt-player" class="theme-yt-player" aria-hidden="true"></div>
+        <span class="theme-music-icon">🎵</span>
+        <div class="theme-music-text">
+            <strong>@L.T("theme_music")</strong>
+            <span id="theme-music-label">@L.T("theme_music_play")</span>
+        </div>
+        <button type="button" id="theme-play-btn" class="theme-play-btn" aria-pressed="false">
+            ▶ @L.T("theme_music_play")
+        </button>
+    </div>
+}
+
+@section Scripts {
+    @if (themeId != null)
+    {
+        <script src="~/js/series-theme.js" asp-append-version="true"></script>
+    }
+}

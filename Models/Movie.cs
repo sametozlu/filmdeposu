@@ -8,4 +8,5 @@ public class Movie
     public int DurationMinutes { get; set; }
     public string Synopsis { get; set; } = string.Empty;
     public double ImdbRating { get; set; }
+    public string PosterUrl { get; set; } = string.Empty;
 }

@@ -8,6 +8,7 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IMovieService, MovieService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

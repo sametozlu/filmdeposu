@@ -1,12 +1,12 @@
 @model SettingsViewModel
 @{
-    ViewData["Title"] = "Ayarlar";
+    ViewData["Title"] = L.T("settings_title");
 }
 
 <section class="section settings-section">
     <div class="section-header">
-        <h1>⚙️ Ayarlar</h1>
-        <p>Site deneyimini kişiselleştirin.</p>
+        <h1>⚙️ @L.T("settings_title")</h1>
+        <p>@L.T("settings_desc")</p>
     </div>
 
     @if (TempData["Success"] != null)
@@ -18,52 +18,51 @@
         @Html.AntiForgeryToken()
 
         <div class="settings-group">
-            <h3>Görünüm</h3>
+            <h3>@L.T("appearance")</h3>
 
             <div class="setting-item">
-                <label for="Theme">Tema</label>
+                <label for="Theme">@L.T("theme")</label>
                 <select asp-for="Settings.Theme" id="Theme" class="form-select">
-                    <option value="dark">Koyu Tema</option>
-                    <option value="light">Açık Tema</option>
+                    <option value="dark">@L.T("theme_dark")</option>
+                    <option value="light">@L.T("theme_light")</option>
                 </select>
             </div>
 
             <div class="setting-item setting-toggle">
-                <label asp-for="Settings.CompactView">Kompakt Görünüm</label>
+                <label asp-for="Settings.CompactView">@L.T("compact_view")</label>
                 <input asp-for="Settings.CompactView" type="checkbox" class="toggle-input" />
             </div>
 
             <div class="setting-item setting-toggle">
-                <label asp-for="Settings.ShowRatings">IMDb Puanlarını Göster</label>
+                <label asp-for="Settings.ShowRatings">@L.T("show_ratings")</label>
                 <input asp-for="Settings.ShowRatings" type="checkbox" class="toggle-input" />
             </div>
         </div>
 
         <div class="settings-group">
-            <h3>Tercihler</h3>
+            <h3>@L.T("preferences")</h3>
 
             <div class="setting-item">
-                <label for="FavoriteSeriesId">Favori Seri</label>
+                <label for="FavoriteSeriesId">@L.T("favorite_series")</label>
                 <select asp-for="Settings.FavoriteSeriesId" id="FavoriteSeriesId" class="form-select">
-                    <option value="">Seçiniz (yok)</option>
+                    <option value="">@L.T("select_none")</option>
                     @foreach (var series in Model.AllSeries)
                     {
                         <option value="@series.Id">@series.Icon @series.Title</option>
                     }
                 </select>
-                <small>Favori seriniz ana sayfada ilk sırada gösterilir.</small>
+                <small>@L.T("favorite_hint")</small>
             </div>
 
             <div class="setting-item">
-                <label for="Language">Dil</label>
+                <label for="Language">@L.T("language")</label>
                 <select asp-for="Settings.Language" id="Language" class="form-select">
-                    <option value="tr">Türkçe</option>
-                    <option value="en">English</option>
+                    <option value="tr">@L.T("lang_tr")</option>
+                    <option value="en">@L.T("lang_en")</option>
                 </select>
-                <small>Not: İçerik şu an Türkçe'dir. Dil seçeneği gelecek güncellemeler için hazırlanmıştır.</small>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <button type="submit" class="btn btn-primary">@L.T("save")</button>
     </form>
 </section>

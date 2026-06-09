@@ -17,6 +17,9 @@ public class MovieSeries
     public string GradientFrom { get; set; } = "#1a1a2e";
     public string GradientTo { get; set; } = "#16213e";
     public string Icon { get; set; } = "🎬";
+    public string PosterUrl { get; set; } = string.Empty;
+    public string BackdropUrl { get; set; } = string.Empty;
+    public string GenreKey { get; set; } = string.Empty;
     public List<Movie> Movies { get; set; } = new();
     public List<CastMember> Cast { get; set; } = new();
 }

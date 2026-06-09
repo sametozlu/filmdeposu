@@ -1,83 +1,157 @@
 ﻿@model HomeViewModel
 @{
-    ViewData["Title"] = "Ana Sayfa";
+    ViewData["Title"] = L.T("home_title");
     var featured = Model.FeaturedSeries;
+    var hasFilters = !string.IsNullOrWhiteSpace(Model.Query) || !string.IsNullOrWhiteSpace(Model.Genre) || Model.MinRating.HasValue;
 }
 
 <section class="hero" style="--accent: @featured?.AccentColor; --from: @featured?.GradientFrom; --to: @featured?.GradientTo;">
-    <div class="hero-content">
-        <span class="hero-badge">Öne Çıkan Seri</span>
-        <h1 class="hero-title">@featured?.Icon @featured?.Title</h1>
-        <p class="hero-tagline">@featured?.Tagline</p>
-        <p class="hero-desc">@featured?.Description</p>
-        <div class="hero-meta">
-            @if (Model.Settings.ShowRatings)
-            {
-                <span class="meta-item">⭐ @featured?.ImdbRating.ToString("F1") IMDb</span>
-            }
-            <span class="meta-item">@featured?.ReleaseYearStart – @featured?.ReleaseYearEnd</span>
-            <span class="meta-item">@featured?.Movies.Count Film</span>
-        </div>
-        <a asp-controller="Series" asp-action="Detail" asp-route-id="@featured?.Id" class="btn btn-primary">
-            Seriyi Keşfet →
-        </a>
+  <div class="hero-backdrop" style="background-image: url('@featured?.BackdropUrl')"></div>
+  <div class="hero-particles" id="heroParticles"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-content reveal-up">
+    <span class="hero-badge pulse-badge">@L.T("featured_badge")</span>
+    <h1 class="hero-title gradient-text">@featured?.Title</h1>
+    <p class="hero-tagline">@featured?.Tagline</p>
+    <p class="hero-desc">@featured?.Description</p>
+    <div class="hero-meta">
+      @if (Model.Settings.ShowRatings)
+      {
+        <span class="meta-item">⭐ @featured?.ImdbRating.ToString("F1") IMDb</span>
+      }
+      <span class="meta-item">@featured?.ReleaseYearStart – @featured?.ReleaseYearEnd</span>
+      <span class="meta-item">@featured?.Movies.Count @L.T("films")</span>
     </div>
-    <div class="hero-visual">
-        <div class="hero-card" style="background: linear-gradient(135deg, @featured?.GradientFrom, @featured?.GradientTo);">
-            <span class="hero-card-icon">@featured?.Icon</span>
-        </div>
+    <a asp-controller="Series" asp-action="Detail" asp-route-id="@featured?.Id" class="btn btn-primary btn-glow">
+      @L.T("explore_series") →
+    </a>
+  </div>
+
+  <div class="hero-visual reveal-scale">
+    <div class="hero-poster-wrap">
+      <div class="poster-shine"></div>
+        <img src="@featured?.PosterUrl" alt="@featured?.Title" class="hero-poster" loading="eager" data-fallback="/images/posters/@(featured?.Id).jpg" />
     </div>
+  </div>
 </section>
 
-<section class="section">
-    <div class="section-header">
-        <h2>Tüm Seriler</h2>
-        <p>En sevilen film serilerini, oyuncu kadrolarını ve film listelerini inceleyin.</p>
-    </div>
+<div class="poster-marquee">
+  <div class="marquee-track">
+    @foreach (var s in Model.MarqueeSeries.Concat(Model.MarqueeSeries))
+    {
+      <a asp-controller="Series" asp-action="Detail" asp-route-id="@s.Id" class="marquee-item">
+        <img src="@s.PosterUrl" alt="@s.Title" loading="lazy" data-fallback="/images/posters/@(s.Id).jpg" />
+        <span>@s.Title</span>
+      </a>
+    }
+  </div>
+</div>
 
+<section class="section reveal-on-scroll">
+  <div class="section-header">
+    <h2>@L.T("all_series")</h2>
+    <p>@L.T("all_series_desc")</p>
+  </div>
+
+  <form asp-action="Index" method="get" class="search-filter-bar">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" name="q" value="@Model.Query" placeholder="@L.T("search_placeholder")" class="search-input" />
+    </div>
+    <select name="genre" class="filter-select">
+      <option value="">@L.T("filter_all_genres")</option>
+      @foreach (var g in Model.Genres)
+      {
+        if (Model.Genre == g.Key) { <option value="@g.Key" selected>@g.Label</option> }
+        else { <option value="@g.Key">@g.Label</option> }
+      }
+    </select>
+    <select name="minRating" class="filter-select">
+      <option value="">@L.T("filter_any_rating")</option>
+      @foreach (var r in new[] { 5.0, 6.0, 7.0, 8.0 })
+      {
+        if (Model.MinRating == r) { <option value="@r" selected>@r+</option> }
+        else { <option value="@r">@r+</option> }
+      }
+    </select>
+    <select name="sort" class="filter-select">
+      <option value="rating" selected="@(Model.SortBy == "rating" ? "selected" : null)">@L.T("sort_rating")</option>
+      <option value="year" selected="@(Model.SortBy == "year" ? "selected" : null)">@L.T("sort_year")</option>
+      <option value="title" selected="@(Model.SortBy == "title" ? "selected" : null)">@L.T("sort_title")</option>
+      <option value="movies" selected="@(Model.SortBy == "movies" ? "selected" : null)">@L.T("sort_movies")</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-search">@L.T("filter_sort")</button>
+    @if (hasFilters)
+    {
+      <a asp-action="Index" class="btn btn-ghost">@L.T("clear_filters")</a>
+    }
+  </form>
+
+  @if (hasFilters)
+  {
+    <p class="results-count">@Model.TotalCount @L.T("search_results")</p>
+  }
+
+  @if (!Model.Series.Any())
+  {
+    <div class="no-results">
+      <span class="no-results-icon">🎬</span>
+      <p>@L.T("no_results")</p>
+      <a asp-action="Index" class="btn btn-primary">@L.T("clear_filters")</a>
+    </div>
+  }
+  else
+  {
     <div class="series-grid @(Model.Settings.CompactView ? "compact" : "")">
-        @foreach (var series in Model.Series)
-        {
-            var isFavorite = series.Id == Model.Settings.FavoriteSeriesId;
-            <article class="series-card" style="--accent: @series.AccentColor; --from: @series.GradientFrom; --to: @series.GradientTo;">
-                <a asp-controller="Series" asp-action="Detail" asp-route-id="@series.Id" class="series-card-link">
-                    <div class="series-card-bg"></div>
-                    <div class="series-card-body">
-                        @if (isFavorite)
-                        {
-                            <span class="favorite-badge">★ Favori</span>
-                        }
-                        <span class="series-icon">@series.Icon</span>
-                        <h3>@series.Title</h3>
-                        <p class="series-genre">@series.Genre</p>
-                        <div class="series-card-footer">
-                            <span>@series.Movies.Count film</span>
-                            @if (Model.Settings.ShowRatings)
-                            {
-                                <span>⭐ @series.ImdbRating.ToString("F1")</span>
-                            }
-                            <span>@series.ReleaseYearStart–@series.ReleaseYearEnd</span>
-                        </div>
-                    </div>
-                </a>
-            </article>
-        }
+      @{ var cardIndex = 0; }
+      @foreach (var series in Model.Series)
+      {
+        var isFavorite = series.Id == Model.Settings.FavoriteSeriesId;
+        <article class="series-card reveal-on-scroll" style="--accent: @series.AccentColor; --from: @series.GradientFrom; --to: @series.GradientTo; --delay: @(cardIndex * 80)ms">
+          <a asp-controller="Series" asp-action="Detail" asp-route-id="@series.Id" class="series-card-link">
+            <div class="series-poster">
+              <img src="@series.PosterUrl" alt="@series.Title" loading="lazy" data-fallback="/images/posters/@(series.Id).jpg" />
+              <div class="series-card-overlay"></div>
+              <div class="series-hover-play">▶</div>
+            </div>
+            <div class="series-card-body">
+              @if (isFavorite)
+              {
+                <span class="favorite-badge">★ @L.T("favorite")</span>
+              }
+              <h3>@series.Title</h3>
+              <p class="series-genre">@series.Genre</p>
+              <div class="series-card-footer">
+                <span>@series.Movies.Count @L.T("films")</span>
+                @if (Model.Settings.ShowRatings)
+                {
+                  <span>⭐ @series.ImdbRating.ToString("F1")</span>
+                }
+                <span>@series.ReleaseYearStart–@series.ReleaseYearEnd</span>
+              </div>
+            </div>
+          </a>
+        </article>
+        cardIndex++;
+      }
     </div>
+  }
 </section>
 
-<section class="section stats-section">
-    <div class="stats-grid">
-        <div class="stat-card">
-            <span class="stat-number">@Model.Series.Count</span>
-            <span class="stat-label">Film Serisi</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-number">@Model.Series.Sum(s => s.Movies.Count)</span>
-            <span class="stat-label">Toplam Film</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-number">@Model.Series.Sum(s => s.Cast.Count)</span>
-            <span class="stat-label">Oyuncu Profili</span>
-        </div>
+<section class="section stats-section reveal-on-scroll">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-number" data-count="@Model.Series.Count">0</span>
+      <span class="stat-label">@L.T("stat_series")</span>
     </div>
+    <div class="stat-card">
+      <span class="stat-number" data-count="@Model.Series.Sum(s => s.Movies.Count)">0</span>
+      <span class="stat-label">@L.T("stat_movies")</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number" data-count="@Model.Series.Sum(s => s.Cast.Count)">0</span>
+      <span class="stat-label">@L.T("stat_cast")</span>
+    </div>
+  </div>
 </section>

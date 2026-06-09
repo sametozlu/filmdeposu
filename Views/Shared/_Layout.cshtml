@@ -1,13 +1,14 @@
 ﻿@{
     var theme = Context.Request.Cookies["FilmSerileriSettings"]?.Contains("light") == true ? "light" : "dark";
+    var lang = L.CurrentLanguage;
 }
 <!DOCTYPE html>
-<html lang="tr" data-theme="@theme">
+<html lang="@lang" data-theme="@theme">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Harry Potter, Yüzüklerin Efendisi, Alacakaranlık ve daha fazlası — efsanevi film serilerini keşfedin." />
-    <title>@ViewData["Title"] - Sinema Serileri</title>
+    <meta name="description" content="Harry Potter, Lord of the Rings, Twilight and more — discover legendary movie franchises." />
+    <title>@ViewData["Title"] - @L.T("site_name")</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
@@ -20,14 +21,23 @@
         <nav class="navbar">
             <a class="navbar-brand" asp-controller="Home" asp-action="Index">
                 <span class="brand-icon">🎬</span>
-                <span class="brand-text">Sinema Serileri</span>
+                <span class="brand-text">@L.T("site_name")</span>
             </a>
-            <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç/kapat">
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
             <ul class="nav-links" id="navLinks">
-                <li><a asp-controller="Home" asp-action="Index" class="nav-link">Ana Sayfa</a></li>
-                <li><a asp-controller="Settings" asp-action="Index" class="nav-link">Ayarlar</a></li>
+                <li><a asp-controller="Home" asp-action="Index" class="nav-link">@L.T("nav_home")</a></li>
+                <li><a asp-controller="Settings" asp-action="Index" class="nav-link">@L.T("nav_settings")</a></li>
+                <li class="lang-switch">
+                    <form asp-controller="Settings" asp-action="SetLanguage" method="post" class="lang-form">
+                        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                        <select name="lang" class="lang-select" onchange="this.form.submit()" aria-label="@L.T("language")">
+                            <option value="tr" selected="@(lang == "tr" ? "selected" : null)">TR</option>
+                            <option value="en" selected="@(lang == "en" ? "selected" : null)">EN</option>
+                        </select>
+                    </form>
+                </li>
             </ul>
         </nav>
     </header>
@@ -38,12 +48,13 @@
 
     <footer class="site-footer">
         <div class="footer-inner">
-            <p>&copy; @DateTime.Now.Year Sinema Serileri — Efsanevi film serilerini keşfedin.</p>
-            <p class="footer-sub">Harry Potter · Yüzüklerin Efendisi · Alacakaranlık · Labirent · Açlık Oyunları</p>
+            <p>&copy; @DateTime.Now.Year @L.T("site_name") — @L.T("footer_tagline")</p>
+            <p class="footer-sub">Harry Potter · LOTR · Twilight · Maze Runner · Hunger Games · Star Wars · Pirates · Jurassic Park · Dune</p>
         </div>
     </footer>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/image-fallback.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

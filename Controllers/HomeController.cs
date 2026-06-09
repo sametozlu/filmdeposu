@@ -17,10 +17,15 @@ public class HomeController : Controller
     _settingsService = settingsService;
   }
 
-  public IActionResult Index()
+  public IActionResult Index(string? q, string? genre, double? minRating, string? sort)
   {
     var settings = _settingsService.GetSettings();
-    var series = _movieService.GetAllSeries().ToList();
+    var lang = settings.Language;
+    var sortBy = string.IsNullOrWhiteSpace(sort) ? "rating" : sort;
+
+    var series = _movieService
+      .SearchSeries(q, genre, minRating, sortBy, lang)
+      .ToList();
 
     if (!string.IsNullOrEmpty(settings.FavoriteSeriesId))
     {
@@ -35,8 +40,15 @@ public class HomeController : Controller
     var model = new HomeViewModel
     {
       Series = series,
-      FeaturedSeries = _movieService.GetFeaturedSeries(),
-      Settings = settings
+      FeaturedSeries = _movieService.GetFeaturedSeries(lang),
+      Settings = settings,
+      Query = q,
+      Genre = genre,
+      MinRating = minRating,
+      SortBy = sortBy,
+      Genres = _movieService.GetGenres(lang).ToList(),
+      TotalCount = series.Count,
+      MarqueeSeries = _movieService.GetAllSeries(lang).ToList()
     };
 
     return View(model);
