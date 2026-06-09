@@ -1,0 +1,49 @@
+﻿@{
+    var theme = Context.Request.Cookies["FilmSerileriSettings"]?.Contains("light") == true ? "light" : "dark";
+}
+<!DOCTYPE html>
+<html lang="tr" data-theme="@theme">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Harry Potter, Yüzüklerin Efendisi, Alacakaranlık ve daha fazlası — efsanevi film serilerini keşfedin." />
+    <title>@ViewData["Title"] - Sinema Serileri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="page-bg"></div>
+
+    <header class="site-header">
+        <nav class="navbar">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-icon">🎬</span>
+                <span class="brand-text">Sinema Serileri</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menüyü aç/kapat">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a asp-controller="Home" asp-action="Index" class="nav-link">Ana Sayfa</a></li>
+                <li><a asp-controller="Settings" asp-action="Index" class="nav-link">Ayarlar</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>&copy; @DateTime.Now.Year Sinema Serileri — Efsanevi film serilerini keşfedin.</p>
+            <p class="footer-sub">Harry Potter · Yüzüklerin Efendisi · Alacakaranlık · Labirent · Açlık Oyunları</p>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

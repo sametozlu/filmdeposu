@@ -1,0 +1,69 @@
+@model SettingsViewModel
+@{
+    ViewData["Title"] = "Ayarlar";
+}
+
+<section class="section settings-section">
+    <div class="section-header">
+        <h1>⚙️ Ayarlar</h1>
+        <p>Site deneyimini kişiselleştirin.</p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form asp-action="Index" method="post" class="settings-form">
+        @Html.AntiForgeryToken()
+
+        <div class="settings-group">
+            <h3>Görünüm</h3>
+
+            <div class="setting-item">
+                <label for="Theme">Tema</label>
+                <select asp-for="Settings.Theme" id="Theme" class="form-select">
+                    <option value="dark">Koyu Tema</option>
+                    <option value="light">Açık Tema</option>
+                </select>
+            </div>
+
+            <div class="setting-item setting-toggle">
+                <label asp-for="Settings.CompactView">Kompakt Görünüm</label>
+                <input asp-for="Settings.CompactView" type="checkbox" class="toggle-input" />
+            </div>
+
+            <div class="setting-item setting-toggle">
+                <label asp-for="Settings.ShowRatings">IMDb Puanlarını Göster</label>
+                <input asp-for="Settings.ShowRatings" type="checkbox" class="toggle-input" />
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h3>Tercihler</h3>
+
+            <div class="setting-item">
+                <label for="FavoriteSeriesId">Favori Seri</label>
+                <select asp-for="Settings.FavoriteSeriesId" id="FavoriteSeriesId" class="form-select">
+                    <option value="">Seçiniz (yok)</option>
+                    @foreach (var series in Model.AllSeries)
+                    {
+                        <option value="@series.Id">@series.Icon @series.Title</option>
+                    }
+                </select>
+                <small>Favori seriniz ana sayfada ilk sırada gösterilir.</small>
+            </div>
+
+            <div class="setting-item">
+                <label for="Language">Dil</label>
+                <select asp-for="Settings.Language" id="Language" class="form-select">
+                    <option value="tr">Türkçe</option>
+                    <option value="en">English</option>
+                </select>
+                <small>Not: İçerik şu an Türkçe'dir. Dil seçeneği gelecek güncellemeler için hazırlanmıştır.</small>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </form>
+</section>

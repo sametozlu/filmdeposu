@@ -1,0 +1,83 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    var featured = Model.FeaturedSeries;
+}
+
+<section class="hero" style="--accent: @featured?.AccentColor; --from: @featured?.GradientFrom; --to: @featured?.GradientTo;">
+    <div class="hero-content">
+        <span class="hero-badge">Öne Çıkan Seri</span>
+        <h1 class="hero-title">@featured?.Icon @featured?.Title</h1>
+        <p class="hero-tagline">@featured?.Tagline</p>
+        <p class="hero-desc">@featured?.Description</p>
+        <div class="hero-meta">
+            @if (Model.Settings.ShowRatings)
+            {
+                <span class="meta-item">⭐ @featured?.ImdbRating.ToString("F1") IMDb</span>
+            }
+            <span class="meta-item">@featured?.ReleaseYearStart – @featured?.ReleaseYearEnd</span>
+            <span class="meta-item">@featured?.Movies.Count Film</span>
+        </div>
+        <a asp-controller="Series" asp-action="Detail" asp-route-id="@featured?.Id" class="btn btn-primary">
+            Seriyi Keşfet →
+        </a>
+    </div>
+    <div class="hero-visual">
+        <div class="hero-card" style="background: linear-gradient(135deg, @featured?.GradientFrom, @featured?.GradientTo);">
+            <span class="hero-card-icon">@featured?.Icon</span>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="section-header">
+        <h2>Tüm Seriler</h2>
+        <p>En sevilen film serilerini, oyuncu kadrolarını ve film listelerini inceleyin.</p>
+    </div>
+
+    <div class="series-grid @(Model.Settings.CompactView ? "compact" : "")">
+        @foreach (var series in Model.Series)
+        {
+            var isFavorite = series.Id == Model.Settings.FavoriteSeriesId;
+            <article class="series-card" style="--accent: @series.AccentColor; --from: @series.GradientFrom; --to: @series.GradientTo;">
+                <a asp-controller="Series" asp-action="Detail" asp-route-id="@series.Id" class="series-card-link">
+                    <div class="series-card-bg"></div>
+                    <div class="series-card-body">
+                        @if (isFavorite)
+                        {
+                            <span class="favorite-badge">★ Favori</span>
+                        }
+                        <span class="series-icon">@series.Icon</span>
+                        <h3>@series.Title</h3>
+                        <p class="series-genre">@series.Genre</p>
+                        <div class="series-card-footer">
+                            <span>@series.Movies.Count film</span>
+                            @if (Model.Settings.ShowRatings)
+                            {
+                                <span>⭐ @series.ImdbRating.ToString("F1")</span>
+                            }
+                            <span>@series.ReleaseYearStart–@series.ReleaseYearEnd</span>
+                        </div>
+                    </div>
+                </a>
+            </article>
+        }
+    </div>
+</section>
+
+<section class="section stats-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-number">@Model.Series.Count</span>
+            <span class="stat-label">Film Serisi</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">@Model.Series.Sum(s => s.Movies.Count)</span>
+            <span class="stat-label">Toplam Film</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">@Model.Series.Sum(s => s.Cast.Count)</span>
+            <span class="stat-label">Oyuncu Profili</span>
+        </div>
+    </div>
+</section>

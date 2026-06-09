@@ -1,0 +1,105 @@
+@model SeriesDetailViewModel
+@{
+    ViewData["Title"] = Model.Series.Title;
+    var s = Model.Series;
+}
+
+<section class="detail-hero" style="--accent: @s.AccentColor; --from: @s.GradientFrom; --to: @s.GradientTo;">
+    <div class="detail-hero-bg"></div>
+    <div class="detail-hero-content">
+        <a asp-controller="Home" asp-action="Index" class="back-link">← Ana Sayfa</a>
+        <span class="detail-icon">@s.Icon</span>
+        <h1>@s.Title</h1>
+        <p class="detail-original">@s.OriginalTitle</p>
+        <p class="detail-tagline">"@s.Tagline"</p>
+        <div class="detail-meta">
+            <span class="tag">@s.Genre</span>
+            @if (Model.Settings.ShowRatings)
+            {
+                <span class="tag rating">⭐ @s.ImdbRating.ToString("F1")</span>
+            }
+            <span class="tag">@s.ReleaseYearStart – @s.ReleaseYearEnd</span>
+        </div>
+    </div>
+</section>
+
+<section class="section detail-section">
+    <div class="detail-grid">
+        <div class="detail-main">
+            <h2>Hakkında</h2>
+            <p class="detail-desc">@s.Description</p>
+
+            <div class="info-cards">
+                <div class="info-card">
+                    <span class="info-label">Yönetmen</span>
+                    <span class="info-value">@s.Director</span>
+                </div>
+                <div class="info-card">
+                    <span class="info-label">Stüdyo</span>
+                    <span class="info-value">@s.Studio</span>
+                </div>
+                <div class="info-card">
+                    <span class="info-label">Film Sayısı</span>
+                    <span class="info-value">@s.Movies.Count</span>
+                </div>
+            </div>
+
+            <h2 class="section-subtitle">Filmler</h2>
+            <div class="movie-timeline">
+                @foreach (var movie in s.Movies.OrderBy(m => m.Order))
+                {
+                    <div class="movie-item">
+                        <div class="movie-order">@movie.Order</div>
+                        <div class="movie-info">
+                            <h3>@movie.Title <span class="movie-year">(@movie.Year)</span></h3>
+                            <p>@movie.Synopsis</p>
+                            <div class="movie-meta">
+                                <span>⏱ @movie.DurationMinutes dk</span>
+                                @if (Model.Settings.ShowRatings)
+                                {
+                                    <span>⭐ @movie.ImdbRating.ToString("F1")</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <aside class="detail-sidebar">
+            <h2>Oyuncu Kadrosu</h2>
+            <div class="cast-list">
+                @foreach (var member in s.Cast)
+                {
+                    <div class="cast-card">
+                        <div class="cast-avatar">@member.ActorName[0]</div>
+                        <div class="cast-info">
+                            <strong>@member.ActorName</strong>
+                            <span class="cast-character">@member.CharacterName</span>
+                            <span class="cast-role">@member.Role</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </aside>
+    </div>
+
+    <div class="series-nav">
+        @if (Model.PrevSeries != null)
+        {
+            <a asp-controller="Series" asp-action="Detail" asp-route-id="@Model.PrevSeries.Id" class="series-nav-link prev">
+                ← @Model.PrevSeries.Title
+            </a>
+        }
+        else
+        {
+            <span></span>
+        }
+        @if (Model.NextSeries != null)
+        {
+            <a asp-controller="Series" asp-action="Detail" asp-route-id="@Model.NextSeries.Id" class="series-nav-link next">
+                @Model.NextSeries.Title →
+            </a>
+        }
+    </div>
+</section>
