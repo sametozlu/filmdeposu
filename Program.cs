@@ -35,6 +35,7 @@ try
   builder.Services.Configure<TmdbOptions>(builder.Configuration.GetSection(TmdbOptions.SectionName));
   builder.Services.Configure<OmdbOptions>(builder.Configuration.GetSection(OmdbOptions.SectionName));
   builder.Services.Configure<RedisOptions>(builder.Configuration.GetSection(RedisOptions.SectionName));
+  builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 
   var tmdbKey = Environment.GetEnvironmentVariable("TMDB_API_KEY");
   if (!string.IsNullOrWhiteSpace(tmdbKey))
@@ -127,7 +128,11 @@ try
   builder.Services.AddScoped<IUserLibraryService, UserLibraryService>();
   builder.Services.AddScoped<IReviewService, ReviewService>();
   builder.Services.AddScoped<IRecommendationService, RecommendationService>();
-  builder.Services.AddSingleton<IAppEmailSender, LogEmailSender>();
+  var emailOptions = builder.Configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>() ?? new EmailOptions();
+  if (emailOptions.IsConfigured)
+    builder.Services.AddSingleton<IAppEmailSender, SmtpEmailSender>();
+  else
+    builder.Services.AddSingleton<IAppEmailSender, LogEmailSender>();
   builder.Services.AddSignalR();
   builder.Services.AddHostedService<TmdbCacheWarmupService>();
 
@@ -145,8 +150,9 @@ try
   using (var scope = app.Services.CreateScope())
   {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var pending = (await db.Database.GetPendingMigrationsAsync()).Any();
-    if (pending)
+    // SQLite: migration tabanlı şema (veri kaybı olmadan güncellenir).
+    // PostgreSQL: migration'lar SQLite için üretildiğinden EnsureCreated kullanılır.
+    if (db.Database.IsSqlite())
       await db.Database.MigrateAsync();
     else
       await db.Database.EnsureCreatedAsync();
@@ -197,7 +203,7 @@ try
 
   await app.RunAsync();
 }
-catch (Exception ex)
+catch (Exception ex) when (ex is not HostAbortedException)
 {
   Log.Fatal(ex, "Application terminated unexpectedly");
 }

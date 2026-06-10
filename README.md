@@ -4,7 +4,8 @@ Efsanevi film serilerini tanıtan profesyonel ASP.NET Core MVC uygulaması.
 
 ## Özellikler
 
-- **14 film serisi** — Harry Potter, LOTR, Star Wars, Dune, Matrix ve daha fazlası
+- **17 film serisi** — Harry Potter, LOTR, Star Wars, John Wick, Görevimiz Tehlike, Yaratık ve daha fazlası
+- **EF Core migration'ları** — şema değişikliklerinde veri kaybı yok (SQLite)
 - **Veritabanı destekli katalog** — seriler EF Core ile DB'de tutulur, ilk açılışta otomatik seed edilir
 - **Admin paneli** (`/Admin`) — rol tabanlı içerik yönetimi: seri/film/oyuncu CRUD
 - **Yorum + puanlama** — kullanıcılar serilere 1-5 yıldız ve yorum verebilir
@@ -59,6 +60,49 @@ docker compose up --build
 - Web: `http://localhost:8080`
 - PostgreSQL: `5432`
 - Redis: `6379`
+
+## Canlıya Alma (Render)
+
+Repo'da `render.yaml` hazır. Adımlar:
+
+1. [render.com](https://render.com)'da ücretsiz hesap aç
+2. **New → Blueprint** seç ve GitHub repo'nu bağla — `render.yaml` otomatik algılanır
+3. Deploy bittiğinde `https://filmdeposu.onrender.com` benzeri bir URL alırsın
+
+Notlar:
+- `Jwt__Key` ve `Admin__Password` otomatik üretilir (admin şifresini Render dashboard → Environment'tan görebilirsin)
+- Ücretsiz planda SQLite dosyası her deploy'da sıfırlanır; kalıcı veri için Render PostgreSQL oluşturup `DATABASE_URL` ortam değişkenini ekle (uygulama otomatik PostgreSQL'e geçer)
+- TMDB/OMDb anahtarlarını da Environment'tan ekleyebilirsin
+
+## E-posta (SMTP)
+
+Şifre sıfırlama mailleri varsayılan olarak loga yazılır. Gerçek e-posta için `appsettings.json` →
+`Email` bölümünü (veya `Email__Host` vb. ortam değişkenlerini) doldur:
+
+```json
+"Email": {
+  "Host": "smtp-relay.brevo.com",
+  "Port": 587,
+  "Username": "kullanici@ornek.com",
+  "Password": "smtp-anahtari",
+  "FromAddress": "noreply@seninsiten.com",
+  "FromName": "Film Deposu"
+}
+```
+
+[Brevo](https://www.brevo.com) (günde 300 mail ücretsiz) veya benzeri bir servis kullanılabilir.
+`Host` doluysa uygulama otomatik olarak MailKit ile gerçek gönderime geçer.
+
+## Veritabanı Migration'ları
+
+SQLite'ta şema EF Core migration'larıyla yönetilir (`Migrations/` klasörü). Model değiştiğinde:
+
+```bash
+dotnet ef migrations add DegisiklikAdi
+```
+
+Uygulama açılışta migration'ları otomatik uygular; veri kaybolmaz. (PostgreSQL tarafında
+`EnsureCreated` kullanılır — docker compose her seferinde temiz kurulum yapar.)
 
 ## Admin Paneli
 

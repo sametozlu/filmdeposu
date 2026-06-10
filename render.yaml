@@ -1,11 +1,19 @@
 services:
   - type: web
-    name: film-serileri
+    name: filmdeposu
     runtime: docker
     plan: free
-    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
     envVars:
-      - key: ASPNETCORE_ENVIRONMENT
-        value: Production
-      - key: ASPNETCORE_URLS
-        value: http://0.0.0.0:8080
+      - key: Jwt__Key
+        generateValue: true
+      - key: Admin__Password
+        generateValue: true
+      # Opsiyonel: TMDB/OMDb anahtarları (Render dashboard'dan da eklenebilir)
+      # - key: TMDB_API_KEY
+      #   sync: false
+      # - key: OMDB_API_KEY
+      #   sync: false
+      # Opsiyonel: kalıcı PostgreSQL için DATABASE_URL ekleyin
+      # - key: DATABASE_URL
+      #   sync: false

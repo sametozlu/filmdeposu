@@ -210,7 +210,10 @@ public class MovieService : IMovieService
     BuildBatman(),
     BuildFastFurious(),
     BuildSpiderMan(),
-    BuildGodfather()
+    BuildGodfather(),
+    BuildJohnWick(),
+    BuildMissionImpossible(),
+    BuildAlien()
   ];
 
   private static MovieSeries BuildHarryPotter() => new()
@@ -724,6 +727,117 @@ public class MovieService : IMovieService
       ("Robert De Niro", "Young Vito", "Başrol"),
       ("Diane Keaton", "Kay Adams", "Yardımcı Rol"),
       ("John Cazale", "Fredo Corleone", "Yardımcı Rol"))
+  };
+
+  private static MovieSeries BuildJohnWick() => new()
+  {
+    Id = "john-wick",
+    Title = "John Wick",
+    OriginalTitle = "John Wick",
+    Tagline = "Asla emekli bir suikastçıyı kızdırma.",
+    Description = "Eski bir suikastçı olan John Wick, köpeğini öldüren ve arabasını çalan mafya üyelerinden intikam almak için yeraltı dünyasına geri döner. Nefes kesen aksiyon koreografileri, Continental Hotel mitolojisi ve Keanu Reeves'in ikonik performansıyla modern aksiyonun zirvesi.",
+    Genre = "Aksiyon / Gerilim",
+    GenreKey = "action",
+    ReleaseYearStart = 2014,
+    ReleaseYearEnd = 2023,
+    Director = "Chad Stahelski",
+    Studio = "Lionsgate",
+    ImdbRating = 7.6,
+    AccentColor = "#4f7cac",
+    GradientFrom = "#0a0e14",
+    GradientTo = "#15202e",
+    Icon = "🔫",
+    PosterUrl = PosterCatalog.Series("john-wick"),
+    BackdropUrl = PosterCatalog.Backdrop("john-wick"),
+    Movies = MoviesFrom("john-wick",
+    [
+      (1, "John Wick", 2014, 101, 7.4, "Emekli suikastçı John Wick, köpeğini öldürenlerden intikam almak için geri döner."),
+      (2, "John Wick 2", 2017, 122, 7.4, "Kan yemini yüzünden Roma'ya giden Wick, tüm suikastçıların hedefi olur."),
+      (3, "John Wick 3: Parabellum", 2019, 130, 7.4, "Aforoz edilen Wick'in başına 14 milyon dolar ödül konur."),
+      (4, "John Wick 4", 2023, 169, 7.7, "Wick, özgürlüğü için Yüksek Masa'ya karşı son savaşını verir.")
+    ]),
+    Cast = Cast(
+      ("Keanu Reeves", "John Wick", "Başrol"),
+      ("Ian McShane", "Winston", "Yardımcı Rol"),
+      ("Laurence Fishburne", "Bowery King", "Yardımcı Rol"),
+      ("Lance Reddick", "Charon", "Yardımcı Rol"),
+      ("Halle Berry", "Sofia", "Yardımcı Rol"),
+      ("Donnie Yen", "Caine", "Yardımcı Rol"))
+  };
+
+  private static MovieSeries BuildMissionImpossible() => new()
+  {
+    Id = "gorevimiz-tehlike",
+    Title = "Görevimiz Tehlike",
+    OriginalTitle = "Mission: Impossible",
+    Tagline = "Görevin, kabul edersen...",
+    Description = "IMF ajanı Ethan Hunt ve ekibi, dünyayı tehdit eden komplolara karşı imkânsız görevleri üstlenir. Tom Cruise'un kendi yaptığı çılgın dublör sahneleriyle ünlü seri, 30 yıla yayılan casus aksiyonunun altın standardıdır.",
+    Genre = "Aksiyon / Casusluk",
+    GenreKey = "action",
+    ReleaseYearStart = 1996,
+    ReleaseYearEnd = 2025,
+    Director = "Brian De Palma, John Woo, J.J. Abrams, Brad Bird, Christopher McQuarrie",
+    Studio = "Paramount Pictures",
+    ImdbRating = 7.4,
+    AccentColor = "#e03c31",
+    GradientFrom = "#10100f",
+    GradientTo = "#26201a",
+    Icon = "🕶️",
+    PosterUrl = PosterCatalog.Series("gorevimiz-tehlike"),
+    BackdropUrl = PosterCatalog.Backdrop("gorevimiz-tehlike"),
+    Movies = MoviesFrom("gorevimiz-tehlike",
+    [
+      (1, "Görevimiz Tehlike", 1996, 110, 7.2, "Ethan Hunt, kendisine kurulan komployu çözmek için kaçak duruma düşer."),
+      (2, "Görevimiz Tehlike 2", 2000, 123, 6.1, "Hunt, ölümcül Chimera virüsünü ele geçirmeye çalışan eski ajanı durdurmalıdır."),
+      (3, "Görevimiz Tehlike 3", 2006, 126, 6.9, "Silah taciri Owen Davian, Hunt'ın özel hayatını hedef alır."),
+      (4, "Görevimiz Tehlike: Hayalet Protokol", 2011, 132, 7.4, "Kremlin bombalamasıyla suçlanan IMF, Burj Khalifa'da nefes kesen bir operasyona girişir."),
+      (5, "Görevimiz Tehlike: Rogue Nation", 2015, 131, 7.4, "Hunt, gizli örgüt Sendika'nın peşine düşer."),
+      (6, "Görevimiz Tehlike: Yansımalar", 2018, 147, 7.7, "Çalınan plütonyum ve ihanetlerle dolu bir yarışta Hunt, geçmişiyle yüzleşir."),
+      (7, "Görevimiz Tehlike: Ölümcül Hesaplaşma", 2023, 163, 7.7, "Hunt, dünyayı tehdit eden yapay zekâ 'Entity'ye karşı savaşır.")
+    ]),
+    Cast = Cast(
+      ("Tom Cruise", "Ethan Hunt", "Başrol"),
+      ("Ving Rhames", "Luther Stickell", "Yardımcı Rol"),
+      ("Simon Pegg", "Benji Dunn", "Yardımcı Rol"),
+      ("Rebecca Ferguson", "Ilsa Faust", "Yardımcı Rol"),
+      ("Hayley Atwell", "Grace", "Yardımcı Rol"),
+      ("Henry Cavill", "August Walker", "Antagonist"))
+  };
+
+  private static MovieSeries BuildAlien() => new()
+  {
+    Id = "yaratik",
+    Title = "Yaratık",
+    OriginalTitle = "Alien",
+    Tagline = "Uzayda kimse çığlığını duyamaz.",
+    Description = "Ridley Scott'ın 1979 başyapıtıyla başlayan seri, uzay gemisi Nostromo'nun ölümcül ksenomorf ile karşılaşmasını ve Ellen Ripley'nin hayatta kalma mücadelesini anlatır. Bilim kurgu ve korkuyu kusursuz harmanlayan, sinema tarihinin en etkili evrenlerinden biri.",
+    Genre = "Bilim Kurgu / Korku",
+    GenreKey = "scifi",
+    ReleaseYearStart = 1979,
+    ReleaseYearEnd = 1997,
+    Director = "Ridley Scott, James Cameron, David Fincher",
+    Studio = "20th Century Studios",
+    ImdbRating = 7.8,
+    AccentColor = "#5aa86e",
+    GradientFrom = "#050a08",
+    GradientTo = "#0e1f17",
+    Icon = "👽",
+    PosterUrl = PosterCatalog.Series("yaratik"),
+    BackdropUrl = PosterCatalog.Backdrop("yaratik"),
+    Movies = MoviesFrom("yaratik",
+    [
+      (1, "Yaratık", 1979, 117, 8.5, "Nostromo mürettebatı, bilinmeyen bir gezegenden gelen sinyali araştırınca ölümcül bir yaratıkla karşılaşır."),
+      (2, "Yaratıklar", 1986, 137, 8.4, "Ripley, koloni gezegenindeki ksenomorf istilasına karşı deniz piyadeleriyle döner."),
+      (3, "Yaratık 3", 1992, 114, 6.4, "Ripley, hapishane gezegenine düşer ve yaratık yeniden ortaya çıkar."),
+      (4, "Yaratık: Diriliş", 1997, 109, 6.2, "Klonlanan Ripley, yeni nesil yaratıklarla yüzleşir.")
+    ]),
+    Cast = Cast(
+      ("Sigourney Weaver", "Ellen Ripley", "Başrol"),
+      ("Tom Skerritt", "Dallas", "Yardımcı Rol"),
+      ("John Hurt", "Kane", "Yardımcı Rol"),
+      ("Michael Biehn", "Hicks", "Yardımcı Rol"),
+      ("Lance Henriksen", "Bishop", "Yardımcı Rol"),
+      ("Winona Ryder", "Call", "Yardımcı Rol"))
   };
 
   private static List<Movie> MoviesFrom(string seriesId, (int Order, string Title, int Year, int Duration, double Rating, string Synopsis)[] items) =>

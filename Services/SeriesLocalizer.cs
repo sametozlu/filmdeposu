@@ -254,6 +254,42 @@ public static class SeriesLocalizer
         [1] = new("The Godfather", "Vito Corleone's family and empire."),
         [2] = new("The Godfather Part II", "Michael's power struggle and young Vito's story."),
         [3] = new("The Godfather Part III", "Michael's search for redemption.")
+      }),
+    ["john-wick"] = new(
+      "John Wick", "Never anger a retired assassin.",
+      "Retired assassin John Wick returns to the underworld to take revenge on the mobsters who killed his dog and stole his car. Breathtaking action choreography, the Continental Hotel mythology, and Keanu Reeves' iconic performance make it the peak of modern action.",
+      "Action / Thriller",
+      new()
+      {
+        [1] = new("John Wick", "Retired assassin John Wick returns to avenge his dog's death."),
+        [2] = new("John Wick: Chapter 2", "Bound by a blood oath, Wick travels to Rome and becomes a target for every assassin."),
+        [3] = new("John Wick: Chapter 3 – Parabellum", "Excommunicated, Wick has a $14 million bounty on his head."),
+        [4] = new("John Wick: Chapter 4", "Wick fights his final battle against the High Table for his freedom.")
+      }),
+    ["gorevimiz-tehlike"] = new(
+      "Mission: Impossible", "Your mission, should you choose to accept it...",
+      "IMF agent Ethan Hunt and his team take on impossible missions against world-threatening conspiracies. Famous for Tom Cruise's insane real stunts, the series is the gold standard of spy action spanning three decades.",
+      "Action / Espionage",
+      new()
+      {
+        [1] = new("Mission: Impossible", "Framed for treason, Ethan Hunt goes rogue to clear his name."),
+        [2] = new("Mission: Impossible 2", "Hunt must stop a rogue agent from unleashing the deadly Chimera virus."),
+        [3] = new("Mission: Impossible III", "Arms dealer Owen Davian targets Hunt's personal life."),
+        [4] = new("Mission: Impossible – Ghost Protocol", "Blamed for bombing the Kremlin, the IMF stages a breathtaking operation at the Burj Khalifa."),
+        [5] = new("Mission: Impossible – Rogue Nation", "Hunt hunts down the secret organization known as the Syndicate."),
+        [6] = new("Mission: Impossible – Fallout", "In a race full of stolen plutonium and betrayals, Hunt faces his past."),
+        [7] = new("Mission: Impossible – Dead Reckoning", "Hunt battles the world-threatening AI known as the Entity.")
+      }),
+    ["yaratik"] = new(
+      "Alien", "In space, no one can hear you scream.",
+      "Beginning with Ridley Scott's 1979 masterpiece, the series follows the spaceship Nostromo's encounter with the deadly xenomorph and Ellen Ripley's fight for survival. A perfect blend of sci-fi and horror, one of cinema's most influential universes.",
+      "Sci-Fi / Horror",
+      new()
+      {
+        [1] = new("Alien", "The Nostromo crew investigates a signal from an unknown planet and encounters a deadly creature."),
+        [2] = new("Aliens", "Ripley returns with marines to fight the xenomorph infestation on a colony planet."),
+        [3] = new("Alien 3", "Ripley crash-lands on a prison planet, and the creature reappears."),
+        [4] = new("Alien Resurrection", "A cloned Ripley faces a new generation of creatures.")
       })
   };
 }

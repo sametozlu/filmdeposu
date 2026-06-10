@@ -23,7 +23,7 @@ function Save-TmdbPoster($path, $filename) {
 $series = [ordered]@{
   "harry-potter" = @(671, 672, 673, 674, 675, 767, 12444, 12445)
   "yuzuklerin-efendisi" = @(120, 121, 122)
-  "alacakaranlik" = @(8966, 18239, 18360, 50646, 50647)
+  "alacakaranlik" = @(8966, 18239, 24021, 50619, 50620)
   "labirent" = @(198663, 294254, 336843)
   "aclik-oyunlari" = @(70160, 101299, 131631, 131634)
   "yildiz-savaslari" = @(1893, 1894, 1895, 11, 1891, 1892, 140607, 181808, 181812)
@@ -35,6 +35,9 @@ $series = [ordered]@{
   "hizli-ve-ofkeli" = @(9799, 584, 9615, 13804, 51497, 82992, 168259)
   "orumcek-adam" = @(315635, 429617, 634649)
   "baba" = @(238, 240, 242)
+  "john-wick" = @(245891, 324552, 458156, 603692)
+  "gorevimiz-tehlike" = @(954, 955, 956, 56292, 177677, 353081, 575264)
+  "yaratik" = @(348, 679, 8077, 8078)
 }
 
 foreach ($seriesId in $series.Keys) {

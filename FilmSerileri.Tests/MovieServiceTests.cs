@@ -32,10 +32,10 @@ public class MovieServiceTests
   }
 
   [Fact]
-  public void GetAllSeries_Returns14Franchises()
+  public void GetAllSeries_Returns17Franchises()
   {
     var all = _service.GetAllSeries();
-    Assert.Equal(14, all.Count);
+    Assert.Equal(17, all.Count);
   }
 
   [Fact]

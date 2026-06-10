@@ -18,6 +18,9 @@ public static class TmdbCatalog
     ["hizli-ve-ofkeli"] = 9485,
     ["orumcek-adam"] = 531241,
     ["baba"] = 230,
+    ["john-wick"] = 404609,
+    ["gorevimiz-tehlike"] = 87359,
+    ["yaratik"] = 8091,
   };
 
   public static readonly Dictionary<string, Dictionary<int, int>> MovieIds = new(StringComparer.OrdinalIgnoreCase)
@@ -36,6 +39,9 @@ public static class TmdbCatalog
     ["hizli-ve-ofkeli"] = new() { [1]=9799, [2]=584, [3]=9615, [4]=13804, [5]=51497, [6]=82992, [7]=168259 },
     ["orumcek-adam"] = new() { [1]=315635, [2]=429617, [3]=634649 },
     ["baba"] = new() { [1]=238, [2]=240, [3]=242 },
+    ["john-wick"] = new() { [1]=245891, [2]=324552, [3]=458156, [4]=603692 },
+    ["gorevimiz-tehlike"] = new() { [1]=954, [2]=955, [3]=956, [4]=56292, [5]=177677, [6]=353081, [7]=575264 },
+    ["yaratik"] = new() { [1]=348, [2]=679, [3]=8077, [4]=8078 },
   };
 
   public static int? GetMovieId(string seriesId, int order) =>
