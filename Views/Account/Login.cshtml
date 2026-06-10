@@ -1,0 +1,22 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = L.T("login_title");
+}
+
+<section class="section auth-section">
+    <h1>@L.T("login_title")</h1>
+    @if (TempData["AccountMessage"] is string msgKey)
+    {
+        <div class="admin-alert">@L.T(msgKey)</div>
+    }
+    <form asp-action="Login" method="post" class="auth-form">
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <label asp-for="Email">@L.T("email")</label>
+        <input asp-for="Email" type="email" required />
+        <label asp-for="Password">@L.T("password")</label>
+        <input asp-for="Password" type="password" required />
+        <button type="submit" class="btn btn-primary">@L.T("login_title")</button>
+    </form>
+    <p><a asp-action="Register">@L.T("register_title")</a> · <a asp-action="ForgotPassword">@L.T("forgot_password")</a></p>
+</section>

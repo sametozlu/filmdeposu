@@ -1,0 +1,11 @@
+**/.git
+**/.vs
+**/bin
+**/obj
+**/.cursor
+**/FilmSerileri.Tests
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/agent-tools
+**/agent-transcripts

@@ -20,6 +20,8 @@ public class MovieSeries
     public string PosterUrl { get; set; } = string.Empty;
     public string BackdropUrl { get; set; } = string.Empty;
     public string GenreKey { get; set; } = string.Empty;
+    public string? UniverseId { get; set; }
+    public int? TmdbCollectionId { get; set; }
     public List<Movie> Movies { get; set; } = new();
     public List<CastMember> Cast { get; set; } = new();
 }

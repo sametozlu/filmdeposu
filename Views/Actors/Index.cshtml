@@ -1,0 +1,20 @@
+@model ActorsIndexViewModel
+@{
+    ViewData["Title"] = L.T("actors_title");
+}
+
+<section class="section reveal-on-scroll">
+    <div class="section-header">
+        <h1>@L.T("actors_title")</h1>
+        <p>@L.T("actors_desc")</p>
+    </div>
+    <div class="actors-grid">
+        @foreach (var actor in Model.Actors)
+        {
+            <a asp-action="Detail" asp-route-id="@actor.Slug" class="actor-card">
+                <img src="@actor.PhotoUrl" alt="@actor.Name" loading="lazy" class="skeleton-img" />
+                <span>@actor.Name</span>
+            </a>
+        }
+    </div>
+</section>

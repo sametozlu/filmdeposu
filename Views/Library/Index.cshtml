@@ -1,0 +1,46 @@
+@model LibraryViewModel
+@{
+    ViewData["Title"] = L.T("library_title");
+}
+
+<section class="section reveal-on-scroll">
+    <div class="section-header">
+        <h1>@L.T("library_title")</h1>
+    </div>
+
+    <h2>@L.T("watchlist")</h2>
+    @if (!Model.Watchlist.Any())
+    {
+        <p class="text-muted">—</p>
+    }
+    else
+    {
+        <div class="similar-grid">
+            @foreach (var s in Model.Watchlist)
+            {
+                <a asp-controller="Series" asp-action="Detail" asp-route-id="@s.Id" class="similar-card" style="--accent: @s.AccentColor">
+                    <img src="@s.PosterUrl" alt="@s.Title" loading="lazy" />
+                    <span>@s.Title</span>
+                </a>
+            }
+        </div>
+    }
+
+    <h2 class="section-subtitle">@L.T("watched")</h2>
+    @if (!Model.Watched.Any())
+    {
+        <p class="text-muted">—</p>
+    }
+    else
+    {
+        <ul class="watched-list">
+            @foreach (var (series, order) in Model.Watched)
+            {
+                <li>
+                    <a asp-controller="Series" asp-action="Detail" asp-route-id="@series.Id">@series.Title</a>
+                    @if (order.HasValue) { <span>— #@order</span> }
+                </li>
+            }
+        </ul>
+    }
+</section>

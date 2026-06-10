@@ -1,0 +1,29 @@
+@model UniverseDetailViewModel
+@{
+    ViewData["Title"] = Model.Map.Title;
+}
+
+<section class="section reveal-on-scroll">
+    <a asp-action="Index" class="back-link">← @L.T("universe_title")</a>
+    <div class="section-header">
+        <h1>@Model.Map.Title</h1>
+        <p>@Model.Map.Description</p>
+    </div>
+    <div class="universe-map" id="universeMap">
+        <svg viewBox="0 0 100 70" class="universe-svg" aria-hidden="true">
+            <line x1="5" y1="35" x2="95" y2="35" class="universe-line" />
+            @foreach (var node in Model.Map.Nodes)
+            {
+                <circle cx="@node.X" cy="@node.Y" r="3" fill="@node.Color" />
+            }
+        </svg>
+        @foreach (var node in Model.Map.Nodes)
+        {
+            <a asp-controller="Series" asp-action="Detail" asp-route-id="@node.SeriesId"
+               class="universe-node" style="left: @(node.X)%; top: @(node.Y)%; --node-color: @node.Color">
+                <span class="universe-node-dot"></span>
+                <span class="universe-node-label">@node.Label</span>
+            </a>
+        }
+    </div>
+</section>

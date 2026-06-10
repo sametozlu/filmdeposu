@@ -1,0 +1,58 @@
+@model CompareViewModel
+@{
+    ViewData["Title"] = L.T("compare_title");
+}
+
+<section class="section reveal-on-scroll">
+    <div class="section-header">
+        <h1>@L.T("compare_title")</h1>
+        <p>@L.T("compare_desc")</p>
+    </div>
+
+    <form method="get" class="compare-form">
+        <select name="a" class="filter-select">
+            <option value="">@L.T("compare_select_a")</option>
+            @foreach (var s in Model.AllSeries)
+            {
+                <option value="@s.Id" selected="@(Model.SeriesAId == s.Id ? "selected" : null)">@s.Title</option>
+            }
+        </select>
+        <span class="compare-vs">VS</span>
+        <select name="b" class="filter-select">
+            <option value="">@L.T("compare_select_b")</option>
+            @foreach (var s in Model.AllSeries)
+            {
+                <option value="@s.Id" selected="@(Model.SeriesBId == s.Id ? "selected" : null)">@s.Title</option>
+            }
+        </select>
+        <button type="submit" class="btn btn-primary">@L.T("compare_btn")</button>
+    </form>
+
+    @if (Model.Comparison != null)
+    {
+        var a = Model.Comparison.SeriesA;
+        var b = Model.Comparison.SeriesB;
+        <div class="compare-table">
+            <div class="compare-row compare-header">
+                <div></div>
+                <div style="--accent: @a.AccentColor">@a.Title</div>
+                <div style="--accent: @b.AccentColor">@b.Title</div>
+            </div>
+            @foreach (var row in new[] {
+                ("⭐ IMDb", a.ImdbRating.ToString("F1"), b.ImdbRating.ToString("F1")),
+                (L.T("movie_count"), a.Movies.Count.ToString(), b.Movies.Count.ToString()),
+                (L.T("director"), a.Director, b.Director),
+                (L.T("studio"), a.Studio, b.Studio),
+                (L.T("filter_genre"), a.Genre, b.Genre),
+                ("Years", $"{a.ReleaseYearStart}–{a.ReleaseYearEnd}", $"{b.ReleaseYearStart}–{b.ReleaseYearEnd}")
+            })
+            {
+                <div class="compare-row">
+                    <div class="compare-label">@row.Item1</div>
+                    <div>@row.Item2</div>
+                    <div>@row.Item3</div>
+                </div>
+            }
+        </div>
+    }
+</section>

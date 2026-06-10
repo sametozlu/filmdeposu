@@ -1,0 +1,38 @@
+@model ActorDetailViewModel
+@{
+    ViewData["Title"] = Model.Actor.Name;
+    var a = Model.Actor;
+}
+
+<section class="section actor-detail reveal-on-scroll">
+    <a asp-action="Index" class="back-link">← @L.T("actors_title")</a>
+    <div class="actor-hero">
+        <img src="@a.PhotoUrl" alt="@a.Name" class="actor-hero-photo skeleton-img" />
+        <div>
+            <h1>@a.Name</h1>
+            @if (!string.IsNullOrWhiteSpace(a.BirthPlace))
+            {
+                <p class="actor-meta">📍 @a.BirthPlace</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(a.Biography))
+            {
+                <p class="actor-bio">@(a.Biography.Length > 500 ? a.Biography[..500] + "…" : a.Biography)</p>
+            }
+        </div>
+    </div>
+
+    <h2>@L.T("actor_roles")</h2>
+    <div class="roles-grid">
+        @foreach (var role in a.Roles)
+        {
+            <a asp-controller="Series" asp-action="Detail" asp-route-id="@role.SeriesId" class="role-card">
+                <img src="@role.PosterUrl" alt="@role.SeriesTitle" loading="lazy" />
+                <div>
+                    <strong>@role.SeriesTitle</strong>
+                    <span>@role.CharacterName</span>
+                    <small>@role.Role</small>
+                </div>
+            </a>
+        }
+    </div>
+</section>
