@@ -1,0 +1,128 @@
+@model QuizViewModel
+@{
+    ViewData["Title"] = L.T("quiz_title");
+}
+
+<section class="section">
+    <div class="section-header">
+        <h1 class="section-title">🧠 @L.T("quiz_title")</h1>
+        <p>@L.T("quiz_desc")</p>
+    </div>
+
+    <div class="quiz-layout">
+        <div class="quiz-card" id="quizCard">
+            <div id="quizStart">
+                <p class="quiz-intro">@L.T("quiz_intro")</p>
+                <button type="button" class="btn btn-primary" id="quizStartBtn">▶ @L.T("quiz_start")</button>
+            </div>
+
+            <div id="quizGame" hidden>
+                <div class="quiz-progress">
+                    <span id="quizCounter"></span>
+                    <span id="quizScoreLabel"></span>
+                </div>
+                <h2 id="quizQuestion" class="quiz-question"></h2>
+                <div id="quizOptions" class="quiz-options"></div>
+            </div>
+
+            <div id="quizEnd" hidden>
+                <h2 class="quiz-final" id="quizFinal"></h2>
+                <p id="quizSaveInfo" class="quiz-save-info"></p>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">↻ @L.T("quiz_play_again")</button>
+            </div>
+        </div>
+
+        <aside class="quiz-card quiz-leaderboard">
+            <h2>🏆 @L.T("quiz_leaderboard")</h2>
+            @if (Model.Leaderboard.Any())
+            {
+                <ol class="quiz-lb-list">
+                    @foreach (var entry in Model.Leaderboard)
+                    {
+                        <li><span>@entry.AuthorName</span><strong>@entry.Score/@entry.Total</strong></li>
+                    }
+                </ol>
+            }
+            else
+            {
+                <p class="review-empty">@L.T("quiz_lb_empty")</p>
+            }
+        </aside>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+(function () {
+    var questions = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Questions.Select(q => new { text = q.Text, options = q.Options, correct = q.CorrectIndex })));
+    var isAuth = @(Model.IsAuthenticated ? "true" : "false");
+    var idx = 0, score = 0, locked = false;
+
+    var elStart = document.getElementById('quizStart');
+    var elGame = document.getElementById('quizGame');
+    var elEnd = document.getElementById('quizEnd');
+
+    document.getElementById('quizStartBtn').addEventListener('click', function () {
+        elStart.hidden = true;
+        elGame.hidden = false;
+        show();
+    });
+
+    function show() {
+        locked = false;
+        var q = questions[idx];
+        document.getElementById('quizCounter').textContent = (idx + 1) + ' / ' + questions.length;
+        document.getElementById('quizScoreLabel').textContent = '@L.T("quiz_score"): ' + score;
+        document.getElementById('quizQuestion').textContent = q.text;
+        var box = document.getElementById('quizOptions');
+        box.innerHTML = '';
+        q.options.forEach(function (opt, i) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-option';
+            btn.textContent = opt;
+            btn.addEventListener('click', function () { answer(i, btn); });
+            box.appendChild(btn);
+        });
+    }
+
+    function answer(i, btn) {
+        if (locked) return;
+        locked = true;
+        var q = questions[idx];
+        var buttons = document.querySelectorAll('.quiz-option');
+        buttons[q.correct].classList.add('correct');
+        if (i === q.correct) { score++; }
+        else { btn.classList.add('wrong'); }
+
+        setTimeout(function () {
+            idx++;
+            if (idx < questions.length) { show(); }
+            else { finish(); }
+        }, 900);
+    }
+
+    function finish() {
+        elGame.hidden = true;
+        elEnd.hidden = false;
+        document.getElementById('quizFinal').textContent = '@L.T("quiz_final"): ' + score + ' / ' + questions.length;
+
+        var info = document.getElementById('quizSaveInfo');
+        if (isAuth) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            fetch('@Url.Action("SaveScore", "Quiz")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'score=' + score + '&total=' + questions.length +
+                      '&__RequestVerificationToken=' + encodeURIComponent(token ? token.value : '')
+            }).then(function (r) {
+                info.textContent = r.ok ? '@L.T("quiz_saved")' : '';
+            });
+        } else {
+            info.textContent = '@L.T("quiz_login_to_save")';
+        }
+    }
+})();
+</script>
+<form hidden>@Html.AntiForgeryToken()</form>
+}

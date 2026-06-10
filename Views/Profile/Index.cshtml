@@ -1,0 +1,38 @@
+@model ProfileViewModel
+@{
+    ViewData["Title"] = L.T("profile_title");
+    var earned = Model.Badges.Count(b => b.Earned);
+}
+
+<section class="section">
+    <div class="profile-hero">
+        <img class="profile-avatar"
+             src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(Model.DisplayName)&background=e50914&color=fff&size=160&bold=true&format=png"
+             alt="@Model.DisplayName" />
+        <div class="profile-info">
+            <h1>@Model.DisplayName</h1>
+            <p class="profile-email">@Model.Email</p>
+            <p class="profile-since">@L.T("profile_member_since"): @Model.MemberSince.ToString("MMMM yyyy")</p>
+        </div>
+    </div>
+
+    <div class="dash-stats">
+        <div class="dash-stat"><span class="dash-number">@Model.WatchlistCount</span><span>@L.T("watchlist")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.WatchedCount</span><span>@L.T("watched")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.ReviewCount</span><span>@L.T("reviews_title")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.GenreCount</span><span>@L.T("profile_genres")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.BestQuizScore</span><span>@L.T("profile_quiz_best")</span></div>
+    </div>
+
+    <h2 class="section-subtitle">🏅 @L.T("badges_title") (@earned/@Model.Badges.Count)</h2>
+    <div class="badge-grid">
+        @foreach (var badge in Model.Badges)
+        {
+            <div class="badge-card @(badge.Earned ? "earned" : "locked")">
+                <span class="badge-icon">@(badge.Earned ? badge.Icon : "🔒")</span>
+                <strong>@L.T(badge.TitleKey)</strong>
+                <span class="badge-desc">@L.T(badge.DescriptionKey)</span>
+            </div>
+        }
+    </div>
+</section>

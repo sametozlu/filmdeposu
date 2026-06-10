@@ -1,20 +1,44 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<FilmSerileri.Entities.ApplicationUser> SignInManager
+@{
     var theme = Context.Request.Cookies["FilmSerileriSettings"]?.Contains("light") == true ? "light" : "dark";
     var lang = L.CurrentLanguage;
+    var siteBaseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var ogTitle = ViewData["OgTitle"] as string ?? $"{ViewData["Title"]} - {L.T("site_name")}";
+    var ogDescription = ViewData["OgDescription"] as string
+        ?? "Harry Potter, Lord of the Rings, Twilight and more — discover legendary movie franchises.";
+    var ogImage = ViewData["OgImage"] as string ?? "/images/posters/harry-potter.jpg";
+    if (ogImage.StartsWith("/")) { ogImage = siteBaseUrl + ogImage; }
+    var ogUrl = siteBaseUrl + Context.Request.Path;
 }
 <!DOCTYPE html>
 <html lang="@lang" data-theme="@theme">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Harry Potter, Lord of the Rings, Twilight and more — discover legendary movie franchises." />
+    <meta name="description" content="@ogDescription" />
+    <meta name="theme-color" content="#0f0f19" />
+    <meta property="og:site_name" content="@L.T("site_name")" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@ogTitle" />
+    <meta property="og:description" content="@ogDescription" />
+    <meta property="og:image" content="@ogImage" />
+    <meta property="og:url" content="@ogUrl" />
+    <meta property="og:locale" content="@(lang == "tr" ? "tr_TR" : "en_US")" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@ogTitle" />
+    <meta name="twitter:description" content="@ogDescription" />
+    <meta name="twitter:image" content="@ogImage" />
+    <link rel="canonical" href="@ogUrl" />
+    <link rel="manifest" href="~/manifest.json" />
+    <link rel="apple-touch-icon" href="~/images/posters/harry-potter.jpg" />
     <title>@ViewData["Title"] - @L.T("site_name")</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body data-user-id="@(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)">
     <div class="page-bg"></div>
 
     <header class="site-header">
@@ -28,7 +52,27 @@
             </button>
             <ul class="nav-links" id="navLinks">
                 <li><a asp-controller="Home" asp-action="Index" class="nav-link">@L.T("nav_home")</a></li>
+                <li><a asp-controller="Actors" asp-action="Index" class="nav-link">@L.T("nav_actors")</a></li>
+                <li><a asp-controller="Compare" asp-action="Index" class="nav-link">@L.T("nav_compare")</a></li>
+                <li><a asp-controller="Universe" asp-action="Index" class="nav-link">@L.T("nav_universe")</a></li>
+                <li><a asp-controller="Quiz" asp-action="Index" class="nav-link">@L.T("nav_quiz")</a></li>
+                <li><a asp-controller="Dashboard" asp-action="Index" class="nav-link">@L.T("nav_dashboard")</a></li>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <li><a asp-controller="Library" asp-action="Index" class="nav-link">@L.T("nav_library")</a></li>
+                    <li><a asp-controller="Profile" asp-action="Index" class="nav-link">@L.T("nav_profile")</a></li>
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    <li><a asp-controller="Admin" asp-action="Index" class="nav-link">@L.T("nav_admin")</a></li>
+                }
                 <li><a asp-controller="Settings" asp-action="Index" class="nav-link">@L.T("nav_settings")</a></li>
+                <li><a href="/swagger" class="nav-link" target="_blank" rel="noopener">@L.T("nav_api")</a></li>
+                <li>
+                    <button type="button" id="cpTrigger" class="nav-link nav-btn cp-trigger" title="Ctrl+K">
+                        🔍 <kbd>Ctrl K</kbd>
+                    </button>
+                </li>
                 <li class="lang-switch">
                     <form asp-controller="Settings" asp-action="SetLanguage" method="post" class="lang-form">
                         <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
@@ -38,6 +82,19 @@
                         </select>
                     </form>
                 </li>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <li>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="lang-form">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="nav-link nav-btn">@L.T("nav_logout")</button>
+                        </form>
+                    </li>
+                }
+                else
+                {
+                    <li><a asp-controller="Account" asp-action="Login" class="nav-link">@L.T("nav_login")</a></li>
+                }
             </ul>
         </nav>
     </header>
@@ -49,12 +106,26 @@
     <footer class="site-footer">
         <div class="footer-inner">
             <p>&copy; @DateTime.Now.Year @L.T("site_name") — @L.T("footer_tagline")</p>
-            <p class="footer-sub">Harry Potter · LOTR · Twilight · Maze Runner · Hunger Games · Star Wars · Pirates · Jurassic Park · Dune</p>
+            <p class="footer-sub">Harry Potter · LOTR · Twilight · Star Wars · Dune · Matrix · Spider-Man</p>
+            <button type="button" id="pwaInstallBtn" class="btn btn-ghost btn-sm" hidden>@L.T("install_app")</button>
         </div>
     </footer>
 
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/image-fallback.js" asp-append-version="true"></script>
+    <script src="~/js/pwa.js" asp-append-version="true"></script>
+    <script>
+        window.cpPlaceholder = '@L.T("palette_placeholder")';
+        window.cpNoResults = '@L.T("palette_no_results")';
+        window.cpNavHint = '@L.T("palette_nav")';
+        window.cpOpenHint = '@L.T("palette_open")';
+    </script>
+    <script src="~/js/command-palette.js" asp-append-version="true"></script>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@@8.0.7/dist/browser/signalr.min.js"></script>
+        <script src="~/js/notifications.js" asp-append-version="true"></script>
+    }
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
