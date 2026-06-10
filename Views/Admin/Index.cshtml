@@ -1,0 +1,55 @@
+@model List<AdminSeriesListItem>
+@{
+    ViewData["Title"] = L.T("admin_title");
+}
+
+<section class="section">
+    <div class="admin-header">
+        <h1 class="section-title">🛠️ @L.T("admin_title")</h1>
+        <div class="admin-actions">
+            <a asp-action="Reviews" class="btn btn-ghost">💬 @L.T("admin_reviews")</a>
+            <a asp-action="Create" class="btn btn-primary">+ @L.T("admin_new")</a>
+        </div>
+    </div>
+
+    @if (TempData["AdminMessage"] is string msg)
+    {
+        <div class="admin-alert">@msg</div>
+    }
+
+    <div class="admin-table-wrap">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>ID</th>
+                    <th>@L.T("admin_col_title")</th>
+                    <th>IMDb</th>
+                    <th>@L.T("admin_col_movies")</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.SortOrder</td>
+                        <td><code>@item.Id</code></td>
+                        <td><a asp-controller="Series" asp-action="Detail" asp-route-id="@item.Id">@item.Title</a></td>
+                        <td>⭐ @item.ImdbRating.ToString("F1")</td>
+                        <td>@item.MovieCount</td>
+                        <td class="admin-actions">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-ghost btn-sm">@L.T("admin_edit")</a>
+                            <form asp-action="Delete" method="post" class="inline-form"
+                                  onsubmit="return confirm('@L.T("admin_delete_confirm")');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <button type="submit" class="btn btn-ghost btn-sm btn-danger">@L.T("admin_delete")</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

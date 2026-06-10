@@ -4,6 +4,9 @@
     ViewData["Title"] = Model.Series.Title;
     var s = Model.Series;
     var themeId = SeriesThemes.GetYouTubeId(s.Id);
+    ViewData["OgTitle"] = s.Title;
+    ViewData["OgDescription"] = s.Tagline;
+    ViewData["OgImage"] = s.PosterUrl;
 }
 
 <section class="detail-hero" style="--accent: @s.AccentColor; --from: @s.GradientFrom; --to: @s.GradientTo;">
@@ -20,11 +23,36 @@
                 {
                     <span class="tag rating">⭐ @s.ImdbRating.ToString("F1")</span>
                 }
+                @if (Model.AverageUserRating.HasValue)
+                {
+                    <span class="tag rating">👥 @Model.AverageUserRating.Value.ToString("F1")/5 (@Model.Reviews.Count)</span>
+                }
                 <span class="tag">@s.ReleaseYearStart – @s.ReleaseYearEnd</span>
+                @if (!string.IsNullOrEmpty(s.UniverseId))
+                {
+                    <a asp-controller="Universe" asp-action="Detail" asp-route-id="@s.UniverseId" class="tag tag-link">🌌 @L.T("universe_title")</a>
+                }
             </div>
+            @if (Model.IsAuthenticated)
+            {
+                <div class="library-actions">
+                    <form asp-action="ToggleWatchlist" method="post" class="inline-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@s.Id" />
+                        <button type="submit" class="btn btn-ghost btn-sm">
+                            @(Model.IsInWatchlist ? "✓ " + L.T("remove_watchlist") : "+ " + L.T("add_watchlist"))
+                        </button>
+                    </form>
+                    <form asp-action="MarkWatched" method="post" class="inline-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@s.Id" />
+                        <button type="submit" class="btn btn-ghost btn-sm">@L.T("mark_watched")</button>
+                    </form>
+                </div>
+            }
         </div>
         <div class="detail-hero-poster">
-            <img src="@s.PosterUrl" alt="@s.Title" />
+            <img src="@s.PosterUrl" alt="@s.Title" class="skeleton-img" />
         </div>
     </div>
 </section>
@@ -50,13 +78,36 @@
                 </div>
             </div>
 
+            @if (Model.IsAuthenticated)
+            {
+                <form asp-action="SaveNote" method="post" class="note-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@s.Id" />
+                    <label for="note">@L.T("notes")</label>
+                    <textarea id="note" name="note" rows="3" placeholder="@L.T("notes")">@Model.UserNote</textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">@L.T("save_note")</button>
+                </form>
+            }
+
+            <h2 class="section-subtitle">@L.T("timeline")</h2>
+            <div class="chrono-timeline">
+                @foreach (var movie in s.Movies.OrderBy(m => m.Year))
+                {
+                    <div class="chrono-node" style="--accent: @s.AccentColor">
+                        <span class="chrono-year">@movie.Year</span>
+                        <span class="chrono-dot"></span>
+                        <span class="chrono-title">@movie.Title</span>
+                    </div>
+                }
+            </div>
+
             <h2 class="section-subtitle">@L.T("movies_section")</h2>
             <div class="movie-timeline">
                 @foreach (var movie in s.Movies.OrderBy(m => m.Order))
                 {
                     <div class="movie-item">
                         <div class="movie-poster-thumb">
-                            <img src="@movie.PosterUrl" alt="@movie.Title" loading="lazy" />
+                            <img src="@movie.PosterUrl" alt="@movie.Title" loading="lazy" class="skeleton-img" />
                             <span class="movie-order">@movie.Order</span>
                         </div>
                         <div class="movie-info">
@@ -68,11 +119,90 @@
                                 {
                                     <span>⭐ @movie.ImdbRating.ToString("F1")</span>
                                 }
+                                @if (!string.IsNullOrEmpty(movie.TrailerYouTubeKey))
+                                {
+                                    <a href="https://www.youtube.com/watch?v=@movie.TrailerYouTubeKey" target="_blank" rel="noopener" class="trailer-link">▶ @L.T("watch_trailer")</a>
+                                }
                             </div>
                         </div>
                     </div>
                 }
             </div>
+
+            <h2 class="section-subtitle" id="reviews">@L.T("reviews_title")</h2>
+            <div class="reviews-block">
+                @if (Model.IsAuthenticated)
+                {
+                    <form asp-action="SaveReview" method="post" class="review-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@s.Id" />
+                        <div class="review-form-head">
+                            <strong>@L.T("review_yours")</strong>
+                            <div class="star-input" role="radiogroup">
+                                @for (var star = 5; star >= 1; star--)
+                                {
+                                    <input type="radio" id="star-@star" name="rating" value="@star"
+                                           checked="@(Model.UserReview?.Rating == star)" required />
+                                    <label for="star-@star" title="@star">★</label>
+                                }
+                            </div>
+                        </div>
+                        <textarea name="text" rows="3" maxlength="2000" placeholder="@L.T("review_placeholder")">@Model.UserReview?.Text</textarea>
+                        <div class="review-form-actions">
+                            <button type="submit" class="btn btn-primary btn-sm">@L.T("review_submit")</button>
+                            @if (Model.UserReview != null)
+                            {
+                                <button type="submit" class="btn btn-ghost btn-sm btn-danger"
+                                        formaction="@Url.Action("DeleteReview", "Series")">@L.T("review_delete")</button>
+                            }
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <p class="review-login-hint">
+                        <a asp-controller="Account" asp-action="Login">@L.T("review_login")</a>
+                    </p>
+                }
+
+                @if (Model.Reviews.Any())
+                {
+                    <div class="review-list">
+                        @foreach (var review in Model.Reviews)
+                        {
+                            <div class="review-card">
+                                <div class="review-card-head">
+                                    <strong>@review.AuthorName</strong>
+                                    <span class="review-stars">@(new string('★', review.Rating))@(new string('☆', 5 - review.Rating))</span>
+                                    <span class="review-date">@review.CreatedAt.ToString("dd.MM.yyyy")</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(review.Text))
+                                {
+                                    <p>@review.Text</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="review-empty">@L.T("review_empty")</p>
+                }
+            </div>
+
+            @if (Model.SimilarSeries.Any())
+            {
+                <h2 class="section-subtitle">@L.T("similar_series")</h2>
+                <div class="similar-grid">
+                    @foreach (var similar in Model.SimilarSeries)
+                    {
+                        <a asp-controller="Series" asp-action="Detail" asp-route-id="@similar.Id" class="similar-card" style="--accent: @similar.AccentColor">
+                            <img src="@similar.PosterUrl" alt="@similar.Title" loading="lazy" />
+                            <span>@similar.Title</span>
+                        </a>
+                    }
+                </div>
+            }
         </div>
 
         <aside class="detail-sidebar">
@@ -80,9 +210,9 @@
             <div class="cast-list">
                 @foreach (var member in s.Cast)
                 {
-                    <div class="cast-card">
+                    <a asp-controller="Actors" asp-action="Detail" asp-route-id="@ActorSlug.FromName(member.ActorName)" class="cast-card cast-card-link">
                         <div class="cast-avatar">
-                            <img src="@member.PhotoUrl" alt="@member.ActorName" loading="lazy"
+                            <img src="@member.PhotoUrl" alt="@member.ActorName" loading="lazy" class="skeleton-img"
                                  onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=@Uri.EscapeDataString(member.ActorName)&background=2d2d44&color=fff&size=185&bold=true&format=png'" />
                         </div>
                         <div class="cast-info">
@@ -90,7 +220,7 @@
                             <span class="cast-character">@member.CharacterName</span>
                             <span class="cast-role">@member.Role</span>
                         </div>
-                    </div>
+                    </a>
                 }
             </div>
         </aside>
@@ -103,10 +233,7 @@
                 ← @Model.PrevSeries.Title
             </a>
         }
-        else
-        {
-            <span></span>
-        }
+        else { <span></span> }
         @if (Model.NextSeries != null)
         {
             <a asp-controller="Series" asp-action="Detail" asp-route-id="@Model.NextSeries.Id" class="series-nav-link next">
@@ -134,6 +261,32 @@
         </button>
     </div>
 }
+
+@{
+    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}";
+    var jsonLd = new Dictionary<string, object?>
+    {
+        ["@context"] = "https://schema.org",
+        ["@type"] = "MovieSeries",
+        ["name"] = s.Title,
+        ["alternateName"] = s.OriginalTitle,
+        ["description"] = s.Description,
+        ["image"] = baseUrl + s.PosterUrl,
+        ["url"] = $"{baseUrl}/Series/Detail/{s.Id}",
+        ["genre"] = s.Genre,
+        ["director"] = new Dictionary<string, object?> { ["@type"] = "Person", ["name"] = s.Director },
+        ["productionCompany"] = new Dictionary<string, object?> { ["@type"] = "Organization", ["name"] = s.Studio },
+        ["aggregateRating"] = new Dictionary<string, object?>
+        {
+            ["@type"] = "AggregateRating",
+            ["ratingValue"] = s.ImdbRating,
+            ["bestRating"] = 10,
+            ["ratingCount"] = Math.Max(Model.Reviews.Count, 1)
+        }
+    };
+    var jsonLdText = System.Text.Json.JsonSerializer.Serialize(jsonLd);
+}
+<script type="application/ld+json">@Html.Raw(jsonLdText)</script>
 
 @section Scripts {
     @if (themeId != null)

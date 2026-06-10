@@ -1,0 +1,90 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = L.T("dashboard_title");
+}
+
+<section class="section">
+    <div class="section-header">
+        <h1 class="section-title">📊 @L.T("dashboard_title")</h1>
+        <p>@L.T("dashboard_desc")</p>
+    </div>
+
+    <div class="dash-stats">
+        <div class="dash-stat"><span class="dash-number">@Model.SeriesCount</span><span>@L.T("dash_series")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.MovieCount</span><span>@L.T("dash_movies")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.ActorCount</span><span>@L.T("dash_actors")</span></div>
+        <div class="dash-stat"><span class="dash-number">@Model.AverageRating.ToString("F2")</span><span>@L.T("dash_avg_rating")</span></div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="dash-card">
+            <h2>@L.T("chart_genres")</h2>
+            <canvas id="genreChart"></canvas>
+        </div>
+        <div class="dash-card">
+            <h2>@L.T("chart_decades")</h2>
+            <canvas id="decadeChart"></canvas>
+        </div>
+        <div class="dash-card dash-card-wide">
+            <h2>@L.T("chart_top")</h2>
+            <canvas id="topChart"></canvas>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+const dashData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+    genreLabels = Model.GenreLabels,
+    genreCounts = Model.GenreCounts,
+    decadeLabels = Model.DecadeLabels,
+    decadeCounts = Model.DecadeCounts,
+    topTitles = Model.TopTitles,
+    topRatings = Model.TopRatings,
+    topColors = Model.TopColors
+}));
+
+const isLight = document.documentElement.dataset.theme === 'light';
+const textColor = isLight ? '#333' : '#ccc';
+const gridColor = isLight ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.08)';
+Chart.defaults.color = textColor;
+Chart.defaults.borderColor = gridColor;
+
+const palette = ['#e50914', '#f5a623', '#7b68ee', '#2ecc71', '#3498db', '#e67e22', '#9b59b6', '#1abc9c'];
+
+new Chart(document.getElementById('genreChart'), {
+    type: 'doughnut',
+    data: {
+        labels: dashData.genreLabels,
+        datasets: [{ data: dashData.genreCounts, backgroundColor: palette, borderWidth: 0 }]
+    },
+    options: { plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('decadeChart'), {
+    type: 'bar',
+    data: {
+        labels: dashData.decadeLabels,
+        datasets: [{ data: dashData.decadeCounts, backgroundColor: '#e50914', borderRadius: 6 }]
+    },
+    options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+    }
+});
+
+new Chart(document.getElementById('topChart'), {
+    type: 'bar',
+    data: {
+        labels: dashData.topTitles,
+        datasets: [{ data: dashData.topRatings, backgroundColor: dashData.topColors, borderRadius: 6 }]
+    },
+    options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: { x: { min: 5, max: 10 } }
+    }
+});
+</script>
+}

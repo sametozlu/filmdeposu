@@ -5,20 +5,45 @@ namespace FilmSerileri.Services;
 
 public class MovieService : IMovieService
 {
-  private static readonly List<MovieSeries> Series = BuildSeries();
+  private readonly SeriesCatalogService _catalog;
+  private readonly MovieEnrichmentService _enrichment;
+  private readonly Dictionary<string, MovieSeries> _enrichedCache = new();
+
+  public MovieService(MovieEnrichmentService enrichment, SeriesCatalogService catalog)
+  {
+    _enrichment = enrichment;
+    _catalog = catalog;
+  }
+
+  private IReadOnlyList<MovieSeries> Source => _catalog.GetAll();
 
   public IReadOnlyList<MovieSeries> GetAllSeries(string language = "tr") =>
-    SeriesLocalizer.LocalizeAll(Series, language);
+    SeriesLocalizer.LocalizeAll(Source, language).Select(_enrichment.Enrich).ToList();
 
   public MovieSeries? GetSeriesById(string id, string language = "tr")
   {
-    var series = Series.FirstOrDefault(s => s.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
-    return series == null ? null : SeriesLocalizer.Localize(series, language);
+    var series = Source.FirstOrDefault(s => s.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+    return series == null ? null : _enrichment.Enrich(SeriesLocalizer.Localize(series, language));
+  }
+
+  public void InvalidateEnrichedCache() => _enrichedCache.Clear();
+
+  public async Task<MovieSeries?> GetSeriesByIdAsync(string id, string language = "tr", CancellationToken ct = default)
+  {
+    var cacheKey = $"{id}:{language}";
+    if (_enrichedCache.TryGetValue(cacheKey, out var cached)) return cached;
+
+    var series = GetSeriesById(id, language);
+    if (series == null) return null;
+
+    var enriched = await _enrichment.EnrichAsync(series, ct);
+    _enrichedCache[cacheKey] = enriched;
+    return enriched;
   }
 
   public MovieSeries? GetFeaturedSeries(string language = "tr")
   {
-    var series = Series.FirstOrDefault(s => s.Id == "harry-potter");
+    var series = Source.FirstOrDefault(s => s.Id == "harry-potter") ?? Source.FirstOrDefault();
     return series == null ? null : SeriesLocalizer.Localize(series, language);
   }
 
@@ -63,7 +88,114 @@ public class MovieService : IMovieService
     return results.ToList();
   }
 
-  private static List<MovieSeries> BuildSeries() =>
+  public PagedResult<MovieSeries> SearchSeriesPaged(string? query, string? genre, double? minRating, string sortBy, int page, int pageSize, string language = "tr")
+  {
+    page = Math.Max(1, page);
+    pageSize = Math.Clamp(pageSize, 6, 24);
+    var all = SearchSeries(query, genre, minRating, sortBy, language);
+    return new PagedResult<MovieSeries>
+    {
+      Items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList(),
+      Page = page,
+      PageSize = pageSize,
+      TotalCount = all.Count
+    };
+  }
+
+  public IReadOnlyList<MovieSeries> GetSimilarSeries(string id, string language = "tr")
+  {
+    var current = GetSeriesById(id, language);
+    if (current == null) return Array.Empty<MovieSeries>();
+
+    return GetAllSeries(language)
+      .Where(s => s.Id != id && (s.GenreKey == current.GenreKey || Math.Abs(s.ReleaseYearStart - current.ReleaseYearStart) <= 5))
+      .OrderByDescending(s => s.GenreKey == current.GenreKey)
+      .ThenByDescending(s => s.ImdbRating)
+      .Take(4)
+      .ToList();
+  }
+
+  public MovieSeries GetRandomSeries(string language = "tr")
+  {
+    var all = GetAllSeries(language);
+    return all[Random.Shared.Next(all.Count)];
+  }
+
+  public ActorProfile? GetActorBySlug(string slug, string language = "tr")
+  {
+    foreach (var series in GetAllSeries(language))
+    {
+      foreach (var member in series.Cast)
+      {
+        if (ActorSlug.FromName(member.ActorName) != slug) continue;
+        return BuildActorProfile(member, language);
+      }
+    }
+    return null;
+  }
+
+  public async Task<ActorProfile?> GetActorBySlugAsync(string slug, string language = "tr", CancellationToken ct = default)
+  {
+    var profile = GetActorBySlug(slug, language);
+    return profile == null ? null : await _enrichment.EnrichActorAsync(profile, ct);
+  }
+
+  public IReadOnlyList<ActorSummary> GetAllActors(string language = "tr")
+  {
+    return GetAllSeries(language)
+      .SelectMany(s => s.Cast.Select(c => new { c.ActorName, c.PhotoUrl }))
+      .GroupBy(a => a.ActorName, StringComparer.OrdinalIgnoreCase)
+      .Select(g => new ActorSummary
+      {
+        Slug = ActorSlug.FromName(g.Key),
+        Name = g.Key,
+        PhotoUrl = g.First().PhotoUrl
+      })
+      .OrderBy(a => a.Name)
+      .ToList();
+  }
+
+  public SeriesComparison? CompareSeries(string idA, string idB, string language = "tr")
+  {
+    var a = GetSeriesById(idA, language);
+    var b = GetSeriesById(idB, language);
+    if (a == null || b == null) return null;
+    return new SeriesComparison { SeriesA = a, SeriesB = b };
+  }
+
+  public async Task WarmupCacheAsync(CancellationToken ct = default)
+  {
+    foreach (var series in Source)
+      await GetSeriesByIdAsync(series.Id, "tr", ct);
+  }
+
+  private ActorProfile BuildActorProfile(CastMember member, string language)
+  {
+    var roles = GetAllSeries(language)
+      .SelectMany(s => s.Cast.Where(c => c.ActorName.Equals(member.ActorName, StringComparison.OrdinalIgnoreCase))
+        .Select(c => new ActorRole
+        {
+          SeriesId = s.Id,
+          SeriesTitle = s.Title,
+          CharacterName = c.CharacterName,
+          Role = c.Role,
+          PosterUrl = s.PosterUrl
+        }))
+      .ToList();
+
+    ActorTmdbIds.Ids.TryGetValue(member.ActorName, out var tmdbId);
+
+    return new ActorProfile
+    {
+      Slug = ActorSlug.FromName(member.ActorName),
+      Name = member.ActorName,
+      PhotoUrl = member.PhotoUrl,
+      TmdbId = tmdbId,
+      Roles = roles
+    };
+  }
+
+  internal static List<MovieSeries> BuildSeries() =>
   [
     BuildHarryPotter(),
     BuildLotr(),

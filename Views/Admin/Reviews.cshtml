@@ -1,0 +1,58 @@
+@model List<FilmSerileri.Entities.Review>
+@{
+    ViewData["Title"] = L.T("admin_reviews");
+}
+
+<section class="section">
+    <div class="admin-header">
+        <h1 class="section-title">💬 @L.T("admin_reviews")</h1>
+        <a asp-action="Index" class="btn btn-ghost">← @L.T("admin_title")</a>
+    </div>
+
+    @if (TempData["AdminMessage"] is string msg)
+    {
+        <div class="admin-alert">@msg</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <p class="review-empty">@L.T("review_empty")</p>
+    }
+    else
+    {
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>@L.T("admin_col_title")</th>
+                        <th>@L.T("admin_col_author")</th>
+                        <th>@L.T("admin_col_rating")</th>
+                        <th>@L.T("admin_col_text")</th>
+                        <th>@L.T("admin_col_date")</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var review in Model)
+                    {
+                        <tr>
+                            <td><a asp-controller="Series" asp-action="Detail" asp-route-id="@review.SeriesId">@review.SeriesId</a></td>
+                            <td>@review.AuthorName</td>
+                            <td><span class="review-stars">@(new string('★', review.Rating))</span></td>
+                            <td class="admin-review-text">@review.Text</td>
+                            <td>@review.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                <form asp-action="DeleteReview" method="post" class="inline-form"
+                                      onsubmit="return confirm('@L.T("admin_delete_confirm")');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@review.Id" />
+                                    <button type="submit" class="btn btn-ghost btn-sm btn-danger">@L.T("admin_delete")</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -1,0 +1,151 @@
+@model AdminSeriesForm
+@{
+    ViewData["Title"] = Model.IsNew ? L.T("admin_new") : $"{L.T("admin_edit")}: {Model.Title}";
+}
+
+<section class="section">
+    <a asp-action="Index" class="back-link">← @L.T("admin_title")</a>
+    <h1 class="section-title">@(Model.IsNew ? "➕ " + L.T("admin_new") : "✏️ " + Model.Title)</h1>
+
+    <div asp-validation-summary="All" class="admin-validation"></div>
+
+    <form asp-action="Save" method="post" class="admin-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="IsNew" />
+
+        <h2 class="section-subtitle">@L.T("admin_section_general")</h2>
+        <div class="admin-grid">
+            <label>ID (slug)
+                <input asp-for="Id" readonly="@(!Model.IsNew)" placeholder="orn: john-wick" />
+            </label>
+            <label>@L.T("admin_col_title") <input asp-for="Title" /></label>
+            <label>Orijinal Ad <input asp-for="OriginalTitle" /></label>
+            <label>Slogan <input asp-for="Tagline" /></label>
+            <label>Tür (etiket) <input asp-for="Genre" /></label>
+            <label>Tür Anahtarı
+                <select asp-for="GenreKey">
+                    <option value="fantasy">fantasy</option>
+                    <option value="scifi">scifi</option>
+                    <option value="action">action</option>
+                    <option value="adventure">adventure</option>
+                    <option value="superhero">superhero</option>
+                    <option value="horror">horror</option>
+                    <option value="animation">animation</option>
+                </select>
+            </label>
+            <label>Başlangıç Yılı <input asp-for="ReleaseYearStart" type="number" /></label>
+            <label>Bitiş Yılı <input asp-for="ReleaseYearEnd" type="number" /></label>
+            <label>Yönetmen <input asp-for="Director" /></label>
+            <label>Stüdyo <input asp-for="Studio" /></label>
+            <label>IMDb Puanı <input asp-for="ImdbRating" type="number" step="0.1" min="0" max="10" /></label>
+            <label>Sıra <input asp-for="SortOrder" type="number" /></label>
+            <label>Vurgu Rengi <input asp-for="AccentColor" type="color" /></label>
+            <label>Gradyan (başlangıç) <input asp-for="GradientFrom" type="color" /></label>
+            <label>Gradyan (bitiş) <input asp-for="GradientTo" type="color" /></label>
+            <label>İkon <input asp-for="Icon" /></label>
+            <label>Evren ID <input asp-for="UniverseId" placeholder="boş bırakılabilir" /></label>
+        </div>
+        <label class="admin-full">@L.T("admin_section_desc")
+            <textarea asp-for="Description" rows="4"></textarea>
+        </label>
+
+        <h2 class="section-subtitle">@L.T("admin_section_movies")</h2>
+        <div id="movieRows" class="admin-rows">
+            @for (var i = 0; i < Model.Movies.Count; i++)
+            {
+                <fieldset class="admin-row">
+                    <input asp-for="Movies[i].Order" type="number" placeholder="#" class="admin-row-order" />
+                    <input asp-for="Movies[i].Title" placeholder="Film adı" />
+                    <input asp-for="Movies[i].Year" type="number" placeholder="Yıl" />
+                    <input asp-for="Movies[i].DurationMinutes" type="number" placeholder="Dakika" />
+                    <input asp-for="Movies[i].ImdbRating" type="number" step="0.1" min="0" max="10" placeholder="IMDb" />
+                    <textarea asp-for="Movies[i].Synopsis" rows="2" placeholder="Özet"></textarea>
+                    <button type="button" class="btn btn-ghost btn-sm btn-danger" onclick="this.closest('.admin-row').remove()">✕</button>
+                </fieldset>
+            }
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="addMovieBtn">+ @L.T("admin_add_movie")</button>
+
+        <h2 class="section-subtitle">@L.T("admin_section_cast")</h2>
+        <div id="castRows" class="admin-rows">
+            @for (var i = 0; i < Model.Cast.Count; i++)
+            {
+                <fieldset class="admin-row admin-row-cast">
+                    <input asp-for="Cast[i].ActorName" placeholder="Oyuncu adı" />
+                    <input asp-for="Cast[i].CharacterName" placeholder="Karakter" />
+                    <select asp-for="Cast[i].Role">
+                        <option value="Başrol">Başrol</option>
+                        <option value="Yardımcı Rol">Yardımcı Rol</option>
+                        <option value="Antagonist">Antagonist</option>
+                    </select>
+                    <button type="button" class="btn btn-ghost btn-sm btn-danger" onclick="this.closest('.admin-row').remove()">✕</button>
+                </fieldset>
+            }
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="addCastBtn">+ @L.T("admin_add_cast")</button>
+
+        <div class="admin-form-footer">
+            <button type="submit" class="btn btn-primary">💾 @L.T("admin_save")</button>
+            <a asp-action="Index" class="btn btn-ghost">@L.T("admin_cancel")</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+<script>
+(function () {
+    function reindex(container, prefix) {
+        container.querySelectorAll('.admin-row').forEach(function (row, i) {
+            row.querySelectorAll('input, textarea, select').forEach(function (el) {
+                if (el.name) el.name = el.name.replace(new RegExp(prefix + '\\[\\d+\\]'), prefix + '[' + i + ']');
+            });
+        });
+    }
+
+    function addRow(containerId, prefix, html) {
+        var container = document.getElementById(containerId);
+        var wrap = document.createElement('fieldset');
+        wrap.className = 'admin-row' + (prefix === 'Cast' ? ' admin-row-cast' : '');
+        wrap.innerHTML = html;
+        container.appendChild(wrap);
+        reindex(container, prefix);
+    }
+
+    document.getElementById('addMovieBtn').addEventListener('click', function () {
+        addRow('movieRows', 'Movies',
+            '<input name="Movies[0].Order" type="number" placeholder="#" class="admin-row-order" />' +
+            '<input name="Movies[0].Title" placeholder="Film adı" />' +
+            '<input name="Movies[0].Year" type="number" placeholder="Yıl" />' +
+            '<input name="Movies[0].DurationMinutes" type="number" placeholder="Dakika" />' +
+            '<input name="Movies[0].ImdbRating" type="number" step="0.1" min="0" max="10" placeholder="IMDb" />' +
+            '<textarea name="Movies[0].Synopsis" rows="2" placeholder="Özet"></textarea>' +
+            '<button type="button" class="btn btn-ghost btn-sm btn-danger" onclick="this.closest(\'.admin-row\').remove()">✕</button>');
+        reindex(document.getElementById('movieRows'), 'Movies');
+    });
+
+    document.getElementById('addCastBtn').addEventListener('click', function () {
+        addRow('castRows', 'Cast',
+            '<input name="Cast[0].ActorName" placeholder="Oyuncu adı" />' +
+            '<input name="Cast[0].CharacterName" placeholder="Karakter" />' +
+            '<select name="Cast[0].Role">' +
+            '<option value="Başrol">Başrol</option>' +
+            '<option value="Yardımcı Rol" selected>Yardımcı Rol</option>' +
+            '<option value="Antagonist">Antagonist</option>' +
+            '</select>' +
+            '<button type="button" class="btn btn-ghost btn-sm btn-danger" onclick="this.closest(\'.admin-row\').remove()">✕</button>');
+        reindex(document.getElementById('castRows'), 'Cast');
+    });
+
+    ['movieRows', 'castRows'].forEach(function (id) {
+        document.getElementById(id).addEventListener('click', function (e) {
+            if (e.target.matches('.btn-danger')) {
+                setTimeout(function () {
+                    reindex(document.getElementById('movieRows'), 'Movies');
+                    reindex(document.getElementById('castRows'), 'Cast');
+                }, 0);
+            }
+        });
+    });
+})();
+</script>
+}

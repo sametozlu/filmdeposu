@@ -48,6 +48,25 @@
   </div>
 </div>
 
+@if (Model.Recommended.Any())
+{
+  <section class="section reveal-on-scroll">
+    <div class="section-header">
+      <h2>✨ @L.T("recommended_title")</h2>
+      <p>@L.T("recommended_desc")</p>
+    </div>
+    <div class="similar-grid recommended-grid">
+      @foreach (var rec in Model.Recommended)
+      {
+        <a asp-controller="Series" asp-action="Detail" asp-route-id="@rec.Id" class="similar-card" style="--accent: @rec.AccentColor">
+          <img src="@rec.PosterUrl" alt="@rec.Title" loading="lazy" />
+          <span>@rec.Title</span>
+        </a>
+      }
+    </div>
+  </section>
+}
+
 <section class="section reveal-on-scroll">
   <div class="section-header">
     <h2>@L.T("all_series")</h2>
@@ -82,6 +101,7 @@
       <option value="movies" selected="@(Model.SortBy == "movies" ? "selected" : null)">@L.T("sort_movies")</option>
     </select>
     <button type="submit" class="btn btn-primary btn-search">@L.T("filter_sort")</button>
+    <a asp-action="Random" class="btn btn-ghost">🎲 @L.T("random_series")</a>
     @if (hasFilters)
     {
       <a asp-action="Index" class="btn btn-ghost">@L.T("clear_filters")</a>
@@ -136,21 +156,36 @@
         cardIndex++;
       }
     </div>
+
+    @if (Model.PagedSeries.TotalPages > 1)
+    {
+      <nav class="pagination" aria-label="Pagination">
+        @if (Model.Page > 1)
+        {
+          <a asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-q="@Model.Query" asp-route-genre="@Model.Genre" asp-route-minRating="@Model.MinRating" asp-route-sort="@Model.SortBy" class="btn btn-ghost">← @L.T("page_prev")</a>
+        }
+        <span class="pagination-info">@Model.Page / @Model.PagedSeries.TotalPages</span>
+        @if (Model.Page < Model.PagedSeries.TotalPages)
+        {
+          <a asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-q="@Model.Query" asp-route-genre="@Model.Genre" asp-route-minRating="@Model.MinRating" asp-route-sort="@Model.SortBy" class="btn btn-ghost">@L.T("page_next") →</a>
+        }
+      </nav>
+    }
   }
 </section>
 
 <section class="section stats-section reveal-on-scroll">
   <div class="stats-grid">
     <div class="stat-card">
-      <span class="stat-number" data-count="@Model.Series.Count">0</span>
+      <span class="stat-number" data-count="@Model.MarqueeSeries.Count">0</span>
       <span class="stat-label">@L.T("stat_series")</span>
     </div>
     <div class="stat-card">
-      <span class="stat-number" data-count="@Model.Series.Sum(s => s.Movies.Count)">0</span>
+      <span class="stat-number" data-count="@Model.MarqueeSeries.Sum(s => s.Movies.Count)">0</span>
       <span class="stat-label">@L.T("stat_movies")</span>
     </div>
     <div class="stat-card">
-      <span class="stat-number" data-count="@Model.Series.Sum(s => s.Cast.Count)">0</span>
+      <span class="stat-number" data-count="@Model.MarqueeSeries.Sum(s => s.Cast.Count)">0</span>
       <span class="stat-label">@L.T("stat_cast")</span>
     </div>
   </div>
