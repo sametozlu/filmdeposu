@@ -8,6 +8,7 @@ using FilmSerileri.Services;
 using FilmSerileri.Services.Omdb;
 using FilmSerileri.Services.Tmdb;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,25 @@ try
     .WriteTo.Console());
 
   builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+  // Sentry hata takibi (SENTRY_DSN tanımlıysa aktif)
+  var sentryDsn = Environment.GetEnvironmentVariable("SENTRY_DSN");
+  if (!string.IsNullOrWhiteSpace(sentryDsn))
+  {
+    builder.WebHost.UseSentry(o =>
+    {
+      o.Dsn = sentryDsn;
+      o.TracesSampleRate = 0.2;
+    });
+  }
+
+  // Render/proxy arkasında doğru şema (https) için
+  builder.Services.Configure<ForwardedHeadersOptions>(o =>
+  {
+    o.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    o.KnownNetworks.Clear();
+    o.KnownProxies.Clear();
+  });
 
   builder.Services.Configure<TmdbOptions>(builder.Configuration.GetSection(TmdbOptions.SectionName));
   builder.Services.Configure<OmdbOptions>(builder.Configuration.GetSection(OmdbOptions.SectionName));
@@ -82,7 +102,7 @@ try
 
   var jwtKey = builder.Configuration["Jwt:Key"] ?? "FilmDeposu-dev-secret-key-degistir-32char!";
   builder.Configuration["Jwt:Key"] = jwtKey;
-  builder.Services.AddAuthentication()
+  var authBuilder = builder.Services.AddAuthentication()
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
       options.TokenValidationParameters = new TokenValidationParameters
@@ -95,6 +115,18 @@ try
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
       };
     });
+
+  // Google ile giriş (ClientId/Secret tanımlıysa aktif)
+  var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+  var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+  if (!string.IsNullOrWhiteSpace(googleClientId) && !string.IsNullOrWhiteSpace(googleClientSecret))
+  {
+    authBuilder.AddGoogle(options =>
+    {
+      options.ClientId = googleClientId;
+      options.ClientSecret = googleClientSecret;
+    });
+  }
 
   builder.Services.AddRateLimiter(options =>
   {
@@ -187,6 +219,7 @@ try
     app.UseExceptionHandler("/Home/Error");
   }
 
+  app.UseForwardedHeaders();
   app.UseSerilogRequestLogging();
   app.UseStaticFiles();
   app.UseRouting();

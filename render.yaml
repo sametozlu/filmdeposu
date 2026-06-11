@@ -1,3 +1,7 @@
+databases:
+  - name: filmdeposu-db
+    plan: free
+
 services:
   - type: web
     name: filmdeposu
@@ -9,11 +13,20 @@ services:
         generateValue: true
       - key: Admin__Password
         generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: filmdeposu-db
+          property: connectionString
       # Opsiyonel: TMDB/OMDb anahtarları (Render dashboard'dan da eklenebilir)
       # - key: TMDB_API_KEY
       #   sync: false
       # - key: OMDB_API_KEY
       #   sync: false
-      # Opsiyonel: kalıcı PostgreSQL için DATABASE_URL ekleyin
-      # - key: DATABASE_URL
+      # Opsiyonel: Google ile giriş
+      # - key: Authentication__Google__ClientId
+      #   sync: false
+      # - key: Authentication__Google__ClientSecret
+      #   sync: false
+      # Opsiyonel: Sentry hata takibi
+      # - key: SENTRY_DSN
       #   sync: false

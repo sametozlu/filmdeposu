@@ -1,6 +1,10 @@
 @model LoginViewModel
+@using FilmSerileri.Entities
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
 @{
     ViewData["Title"] = L.T("login_title");
+    var externalSchemes = (await SignInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 }
 
 <section class="section auth-section">
@@ -18,5 +22,16 @@
         <input asp-for="Password" type="password" required />
         <button type="submit" class="btn btn-primary">@L.T("login_title")</button>
     </form>
+    @if (externalSchemes.Any())
+    {
+        <form asp-action="ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="auth-form external-login-form">
+            @foreach (var scheme in externalSchemes)
+            {
+                <button type="submit" name="provider" value="@scheme.Name" class="btn btn-secondary btn-google">
+                    @L.T("login_google")
+                </button>
+            }
+        </form>
+    }
     <p><a asp-action="Register">@L.T("register_title")</a> · <a asp-action="ForgotPassword">@L.T("forgot_password")</a></p>
 </section>

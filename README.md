@@ -2,6 +2,14 @@
 
 Efsanevi film serilerini tanıtan profesyonel ASP.NET Core MVC uygulaması.
 
+**Canlı Demo:** [filmdeposu.onrender.com](https://filmdeposu.onrender.com) *(ücretsiz planda ilk açılış ~1 dk sürebilir)*
+
+## Ekran Görüntüleri
+
+| Ana Sayfa | Seri Detayı |
+|-----------|-------------|
+| ![Ana sayfa](docs/screenshots/home.png) | ![Seri detayı](docs/screenshots/series.png) |
+
 ## Özellikler
 
 - **17 film serisi** — Harry Potter, LOTR, Star Wars, John Wick, Görevimiz Tehlike, Yaratık ve daha fazlası
@@ -17,6 +25,8 @@ Efsanevi film serilerini tanıtan profesyonel ASP.NET Core MVC uygulaması.
 - **Film quizi** (`/Quiz`) — katalogdan otomatik üretilen sorular + skor tablosu
 - **SignalR canlı bildirimler** — yeni yorumlarda anlık toast bildirimi
 - **Şifre sıfırlama akışı** — Identity token tabanlı (dev'de link loga yazılır)
+- **Google ile giriş** — OAuth 2.0 external login (yapılandırıldığında otomatik aktif)
+- **Sentry hata takibi** — `SENTRY_DSN` tanımlıysa canlıdaki hatalar otomatik raporlanır
 - **Yorum moderasyonu** — admin panelinden tüm yorumları yönetme
 - **Prometheus metrikleri** — `/metrics` endpoint'i (prometheus-net)
 - **Playwright E2E testleri** — gerçek tarayıcıyla 5 duman testi
@@ -71,8 +81,32 @@ Repo'da `render.yaml` hazır. Adımlar:
 
 Notlar:
 - `Jwt__Key` ve `Admin__Password` otomatik üretilir (admin şifresini Render dashboard → Environment'tan görebilirsin)
-- Ücretsiz planda SQLite dosyası her deploy'da sıfırlanır; kalıcı veri için Render PostgreSQL oluşturup `DATABASE_URL` ortam değişkenini ekle (uygulama otomatik PostgreSQL'e geçer)
+- Blueprint, ücretsiz bir **PostgreSQL** veritabanı oluşturup `DATABASE_URL`'i otomatik bağlar — kullanıcılar ve yorumlar deploy'lar arasında kalıcıdır
 - TMDB/OMDb anahtarlarını da Environment'tan ekleyebilirsin
+- **Uyanık tutma:** ücretsiz plan 15 dk boşta kalınca uyur. [UptimeRobot](https://uptimerobot.com)'ta ücretsiz hesap aç, `https://<site-url>/health` adresine 5 dakikada bir HTTP monitörü kur — site hep hızlı açılır
+
+## Google ile Giriş (opsiyonel)
+
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → **Create Credentials → OAuth client ID** (tip: Web application)
+2. **Authorized redirect URI** olarak ekle: `https://<site-url>/signin-google` (lokal için `http://localhost:8080/signin-google`)
+3. Ortam değişkenlerini tanımla (Render → Environment veya lokalde user-secrets):
+
+```bash
+Authentication__Google__ClientId=xxx.apps.googleusercontent.com
+Authentication__Google__ClientSecret=GOCSPX-...
+```
+
+Tanımlı olduğunda giriş sayfasında "Google ile devam et" butonu otomatik görünür.
+
+## Sentry Hata Takibi (opsiyonel)
+
+[sentry.io](https://sentry.io)'da ücretsiz hesap aç, ASP.NET Core projesi oluştur ve DSN'i ortam değişkeni olarak ekle:
+
+```bash
+SENTRY_DSN=https://xxx@yyy.ingest.sentry.io/zzz
+```
+
+Tanımlıysa yakalanmamış tüm hatalar ve yavaş istekler (trace) otomatik Sentry'ye raporlanır.
 
 ## E-posta (SMTP)
 

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FilmSerileri.Entities;
 using FilmSerileri.Services;
 using FilmSerileri.ViewModels;
@@ -61,6 +62,65 @@ public class AccountController : Controller
 
     await _signInManager.SignInAsync(user, isPersistent: true);
     return RedirectToAction("Index", "Home");
+  }
+
+  [HttpPost, ValidateAntiForgeryToken]
+  public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+  {
+    var redirectUrl = Url.Action(nameof(ExternalLoginCallback), "Account", new { returnUrl });
+    var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+    return Challenge(properties, provider);
+  }
+
+  [HttpGet]
+  public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+  {
+    if (remoteError != null)
+    {
+      TempData["AccountMessage"] = "external_failed";
+      return RedirectToAction(nameof(Login));
+    }
+
+    var info = await _signInManager.GetExternalLoginInfoAsync();
+    if (info == null)
+    {
+      TempData["AccountMessage"] = "external_failed";
+      return RedirectToAction(nameof(Login));
+    }
+
+    var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true);
+    if (result.Succeeded)
+      return Redirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
+
+    var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+    if (string.IsNullOrWhiteSpace(email))
+    {
+      TempData["AccountMessage"] = "external_failed";
+      return RedirectToAction(nameof(Login));
+    }
+
+    var user = await _userManager.FindByEmailAsync(email);
+    if (user == null)
+    {
+      user = new ApplicationUser
+      {
+        UserName = email,
+        Email = email,
+        DisplayName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email.Split('@')[0],
+        EmailConfirmed = true
+      };
+
+      var createResult = await _userManager.CreateAsync(user);
+      if (!createResult.Succeeded)
+      {
+        TempData["AccountMessage"] = "external_failed";
+        return RedirectToAction(nameof(Login));
+      }
+    }
+
+    await _userManager.AddLoginAsync(user, new UserLoginInfo(info.LoginProvider, info.ProviderKey, info.ProviderDisplayName));
+    await _signInManager.SignInAsync(user, isPersistent: true);
+    return Redirect(string.IsNullOrWhiteSpace(returnUrl) ? "/" : returnUrl);
   }
 
   [HttpPost, ValidateAntiForgeryToken]

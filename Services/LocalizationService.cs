@@ -181,6 +181,8 @@ public class LocalizationService : ILocalizationService
     ["quiz_q_year"] = new("\"{0}\" filmi hangi yıl vizyona girdi?", "In which year was \"{0}\" released?"),
     ["quiz_q_series"] = new("\"{0}\" filmi hangi seriye ait?", "Which franchise does \"{0}\" belong to?"),
     ["quiz_q_director"] = new("{0} serisinin yönetmeni kim?", "Who directed {0}?"),
+    ["login_google"] = new("Google ile devam et", "Continue with Google"),
+    ["external_failed"] = new("Google ile giriş başarısız oldu, lütfen tekrar dene.", "Google sign-in failed, please try again."),
     ["forgot_password"] = new("Şifremi Unuttum", "Forgot Password"),
     ["forgot_password_desc"] = new("E-posta adresini gir, sana sıfırlama bağlantısı gönderelim.", "Enter your email and we'll send you a reset link."),
     ["send_reset_link"] = new("Sıfırlama Bağlantısı Gönder", "Send Reset Link"),
