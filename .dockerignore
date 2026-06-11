@@ -4,6 +4,8 @@
 **/obj
 **/.cursor
 **/FilmSerileri.Tests
+**/FilmSerileri.E2E
+*.sln
 **/*.db
 **/*.db-shm
 **/*.db-wal

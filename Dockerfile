@@ -3,7 +3,7 @@ WORKDIR /src
 COPY ["FilmSerileri.csproj", "./"]
 RUN dotnet restore
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish FilmSerileri.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
